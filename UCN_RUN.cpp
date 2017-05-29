@@ -15,7 +15,7 @@ using namespace std;
 
 #include "UCN_CUDA_WRAPPER.h"
 #include "UCN_RUN.h"
-#include "UCN_STRING.h"
+// #include "UCN_STRING.h"
 
 int ipow(int base, int exp)
 {

@@ -20,7 +20,7 @@ using namespace std;
 
 #include "UCN_CUDA_WRAPPER.h"
 #include "UCN_RUN.h"
-#include "UCN_MAGNETIC.h"
+// #include "UCN_MAGNETIC.h"
 
 int main()
 {
