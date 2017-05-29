@@ -10,13 +10,11 @@
 #include <iomanip>
 #include <cmath>
 #include <limits>
-#include <numeric>
 #include <vector>
 #include <map>
-#include <set>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h> 
+#include <time.h>
 
 using namespace std;
 
@@ -26,169 +24,26 @@ using namespace std;
 
 int main()
 {
+	
 	map<int, double> param_m_vi_CONST;
 	map<int, int> param_m_vi_CONST_INT;
-	param_m_vi_CONST[e_d_CONST_def_MAXERR] = 1e-10;
-	param_m_vi_CONST[e_d_CONST_def_MAXERR1] = 1e0;
-	c_UCN_RUN_DATA obj_MOAR_c_UCN_RUN_DATA_TEST_0 = fxn_PARAMETERIZED_CONSTRUCTOR_c_UCN_RUN_DATA(
-		/* const int vi_INPUT_e_d_CONST_INT_numThreadsPerBlock_EXP_MAX, */ 5, 
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerThread_EXP, */ 12, 
-		/* const int vi_INPUT_e_d_CONST_INT_numThreads_EXP, */ 2,
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerUpdate, */ 256,
-		/* const int vi_INPUT_e_d_CONST_INT_numCyclesPerRecord, */ 1,
-		param_m_vi_CONST_INT, 
-		param_m_vi_CONST);
-	obj_MOAR_c_UCN_RUN_DATA_TEST_0.fxn_FORMATTED_WRITE_MINIMUM("UCN", true);
-	return 0;
-	param_m_vi_CONST.erase(e_d_CONST_def_MAXERR);
-	param_m_vi_CONST.erase(e_d_CONST_def_MAXERR1);
-	param_m_vi_CONST[e_d_CONST_def_MAXERR] = 1e-8;
-	param_m_vi_CONST[e_d_CONST_def_MAXERR1] = 1e-9;
-	c_UCN_RUN_DATA obj_MOAR_c_UCN_RUN_DATA_TEST_1 = fxn_PARAMETERIZED_CONSTRUCTOR_c_UCN_RUN_DATA(
-		/* const int vi_INPUT_e_d_CONST_INT_numThreadsPerBlock_EXP_MAX, */ 5, 
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerThread_EXP, */ 16, 
-		/* const int vi_INPUT_e_d_CONST_INT_numThreads_EXP, */ 2,
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerUpdate, */ 1,
-		/* const int vi_INPUT_e_d_CONST_INT_numCyclesPerRecord, */ 100,
-		param_m_vi_CONST_INT, 
-		param_m_vi_CONST);
-	obj_MOAR_c_UCN_RUN_DATA_TEST_1.fxn_FORMATTED_WRITE("UCN", true);
-
-	param_m_vi_CONST.erase(e_d_CONST_def_MAXERR);
-	param_m_vi_CONST.erase(e_d_CONST_def_MAXERR1);
-	param_m_vi_CONST[e_d_CONST_def_MAXERR] = 1e-7;
-	param_m_vi_CONST[e_d_CONST_def_MAXERR1] = 1e-9;
-	c_UCN_RUN_DATA obj_MOAR_c_UCN_RUN_DATA_TEST_2 = fxn_PARAMETERIZED_CONSTRUCTOR_c_UCN_RUN_DATA(
-		/* const int vi_INPUT_e_d_CONST_INT_numThreadsPerBlock_EXP_MAX, */ 5, 
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerThread_EXP, */ 16, 
-		/* const int vi_INPUT_e_d_CONST_INT_numThreads_EXP, */ 2,
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerUpdate, */ 1,
-		/* const int vi_INPUT_e_d_CONST_INT_numCyclesPerRecord, */ 1000,
-		param_m_vi_CONST_INT, 
-		param_m_vi_CONST);
-	obj_MOAR_c_UCN_RUN_DATA_TEST_2.fxn_FORMATTED_WRITE("UCN", true);
-
-	param_m_vi_CONST.erase(e_d_CONST_def_MAXERR);
-	param_m_vi_CONST.erase(e_d_CONST_def_MAXERR1);
-	param_m_vi_CONST[e_d_CONST_def_MAXERR] = 1e-8;
-	param_m_vi_CONST[e_d_CONST_def_MAXERR1] = 1e-10;
-	c_UCN_RUN_DATA obj_MOAR_c_UCN_RUN_DATA_TEST_3 = fxn_PARAMETERIZED_CONSTRUCTOR_c_UCN_RUN_DATA(
-		/* const int vi_INPUT_e_d_CONST_INT_numThreadsPerBlock_EXP_MAX, */ 5, 
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerThread_EXP, */ 16, 
-		/* const int vi_INPUT_e_d_CONST_INT_numThreads_EXP, */ 2,
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerUpdate, */ 1,
-		/* const int vi_INPUT_e_d_CONST_INT_numCyclesPerRecord, */ 1000,
-		param_m_vi_CONST_INT, 
-		param_m_vi_CONST);
-	obj_MOAR_c_UCN_RUN_DATA_TEST_3.fxn_FORMATTED_WRITE("UCN", true);
-	param_m_vi_CONST.erase(e_d_CONST_def_MAXERR);
-	param_m_vi_CONST.erase(e_d_CONST_def_MAXERR1);
-	return 0;
-
-	// param_m_vi_CONST[e_d_CONST_def_MAXERR] = 1e-9;
-	// param_m_vi_CONST[e_d_CONST_def_MAXERR1] = 1e-11;
-	// c_UCN_RUN_DATA obj_MOAR_c_UCN_RUN_DATA_TEST = fxn_PARAMETERIZED_CONSTRUCTOR_c_UCN_RUN_DATA(
-		// /* const int vi_INPUT_e_d_CONST_INT_numThreadsPerBlock_EXP_MAX, */ 5, 
-		// /* const int vi_INPUT_e_d_CONST_INT_numRecordsPerThread_EXP, */ 6, 
-		// /* const int vi_INPUT_e_d_CONST_INT_numThreads_EXP, */ 2,
-		// /* const int vi_INPUT_e_d_CONST_INT_numRecordsPerUpdate, */ 1,
-		// /* const int vi_INPUT_e_d_CONST_INT_numCyclesPerRecord, */ 100,
-		// param_m_vi_CONST_INT, 
-		// param_m_vi_CONST);
-	// obj_MOAR_c_UCN_RUN_DATA_TEST.fxn_FORMATTED_WRITE("UCN", true);
-	// return 0;
-	// param_m_vi_CONST.erase(e_d_CONST_def_MAXERR);
-	// param_m_vi_CONST.erase(e_d_CONST_def_MAXERR1);
-	param_m_vi_CONST[e_d_CONST_def_MAXERR] = 1e-6;
-	param_m_vi_CONST[e_d_CONST_def_MAXERR1] = 1e-8;
+	// param_m_vi_CONST[e_d_CONST_def_MAXERR1] = 1e-12;
 	c_UCN_RUN_DATA obj_MOAR_c_UCN_RUN_DATA_0 = fxn_PARAMETERIZED_CONSTRUCTOR_c_UCN_RUN_DATA(
 		/* const int vi_INPUT_e_d_CONST_INT_numThreadsPerBlock_EXP_MAX, */ 5, 
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerThread_EXP, */ 12, 
-		/* const int vi_INPUT_e_d_CONST_INT_numThreads_EXP, */ 2,
+		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerThread_EXP, */ 10, 
+		/* const int vi_INPUT_e_d_CONST_INT_numThreads_EXP, */ 3,
 		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerUpdate, */ 16,
-		/* const int vi_INPUT_e_d_CONST_INT_numCyclesPerRecord, */ 100,
+		/* const int vi_INPUT_e_d_CONST_INT_numCyclesPerRecord, */ 1000,
 		param_m_vi_CONST_INT, 
 		param_m_vi_CONST);
-	obj_MOAR_c_UCN_RUN_DATA_0.fxn_FORMATTED_WRITE("UCN_N6", true);
-	param_m_vi_CONST.erase(e_d_CONST_def_MAXERR);
-	param_m_vi_CONST[e_d_CONST_def_MAXERR] = 1e-7;
-	param_m_vi_CONST.erase(e_d_CONST_def_MAXERR1);
-	param_m_vi_CONST[e_d_CONST_def_MAXERR1] = 1e-9;
-	c_UCN_RUN_DATA obj_MOAR_c_UCN_RUN_DATA_1 = fxn_PARAMETERIZED_CONSTRUCTOR_c_UCN_RUN_DATA(
-		/* const int vi_INPUT_e_d_CONST_INT_numThreadsPerBlock_EXP_MAX, */ 5, 
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerThread_EXP, */ 12, 
-		/* const int vi_INPUT_e_d_CONST_INT_numThreads_EXP, */ 2,
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerUpdate, */ 16,
-		/* const int vi_INPUT_e_d_CONST_INT_numCyclesPerRecord, */ 100,
-		param_m_vi_CONST_INT, 
-		param_m_vi_CONST);
-	obj_MOAR_c_UCN_RUN_DATA_1.fxn_FORMATTED_WRITE("UCN_N7", true);
-	param_m_vi_CONST.erase(e_d_CONST_def_MAXERR);
-	param_m_vi_CONST[e_d_CONST_def_MAXERR] = 1e-8;
-	param_m_vi_CONST.erase(e_d_CONST_def_MAXERR1);
-	param_m_vi_CONST[e_d_CONST_def_MAXERR1] = 1e-10;
-	c_UCN_RUN_DATA obj_MOAR_c_UCN_RUN_DATA_2 = fxn_PARAMETERIZED_CONSTRUCTOR_c_UCN_RUN_DATA(
-		/* const int vi_INPUT_e_d_CONST_INT_numThreadsPerBlock_EXP_MAX, */ 5, 
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerThread_EXP, */ 12, 
-		/* const int vi_INPUT_e_d_CONST_INT_numThreads_EXP, */ 2,
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerUpdate, */ 16,
-		/* const int vi_INPUT_e_d_CONST_INT_numCyclesPerRecord, */ 100,
-		param_m_vi_CONST_INT, 
-		param_m_vi_CONST);
-	obj_MOAR_c_UCN_RUN_DATA_2.fxn_FORMATTED_WRITE("UCN_N8", true);
-	param_m_vi_CONST.erase(e_d_CONST_def_MAXERR);
-	param_m_vi_CONST[e_d_CONST_def_MAXERR] = 1e-9;
-	param_m_vi_CONST.erase(e_d_CONST_def_MAXERR1);
-	param_m_vi_CONST[e_d_CONST_def_MAXERR1] = 1e-11;
-	c_UCN_RUN_DATA obj_MOAR_c_UCN_RUN_DATA_3 = fxn_PARAMETERIZED_CONSTRUCTOR_c_UCN_RUN_DATA(
-		/* const int vi_INPUT_e_d_CONST_INT_numThreadsPerBlock_EXP_MAX, */ 5, 
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerThread_EXP, */ 12, 
-		/* const int vi_INPUT_e_d_CONST_INT_numThreads_EXP, */ 2,
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerUpdate, */ 16,
-		/* const int vi_INPUT_e_d_CONST_INT_numCyclesPerRecord, */ 100,
-		param_m_vi_CONST_INT, 
-		param_m_vi_CONST);
-	obj_MOAR_c_UCN_RUN_DATA_3.fxn_FORMATTED_WRITE("UCN_N9", true);
-	param_m_vi_CONST.erase(e_d_CONST_def_MAXERR);
-	param_m_vi_CONST[e_d_CONST_def_MAXERR] = 1e-10;
-	param_m_vi_CONST.erase(e_d_CONST_def_MAXERR1);
-	param_m_vi_CONST[e_d_CONST_def_MAXERR1] = 1e-12;
-	c_UCN_RUN_DATA obj_MOAR_c_UCN_RUN_DATA_4 = fxn_PARAMETERIZED_CONSTRUCTOR_c_UCN_RUN_DATA(
-		/* const int vi_INPUT_e_d_CONST_INT_numThreadsPerBlock_EXP_MAX, */ 5, 
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerThread_EXP, */ 12, 
-		/* const int vi_INPUT_e_d_CONST_INT_numThreads_EXP, */ 2,
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerUpdate, */ 16,
-		/* const int vi_INPUT_e_d_CONST_INT_numCyclesPerRecord, */ 100,
-		param_m_vi_CONST_INT, 
-		param_m_vi_CONST);
-	obj_MOAR_c_UCN_RUN_DATA_4.fxn_FORMATTED_WRITE("UCN_N10", true);
-	param_m_vi_CONST.erase(e_d_CONST_def_MAXERR);
-	param_m_vi_CONST[e_d_CONST_def_MAXERR] = 1e-11;
-	param_m_vi_CONST.erase(e_d_CONST_def_MAXERR1);
-	param_m_vi_CONST[e_d_CONST_def_MAXERR1] = 1e-13;
-	c_UCN_RUN_DATA obj_MOAR_c_UCN_RUN_DATA_5 = fxn_PARAMETERIZED_CONSTRUCTOR_c_UCN_RUN_DATA(
-		/* const int vi_INPUT_e_d_CONST_INT_numThreadsPerBlock_EXP_MAX, */ 5, 
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerThread_EXP, */ 12, 
-		/* const int vi_INPUT_e_d_CONST_INT_numThreads_EXP, */ 2,
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerUpdate, */ 16,
-		/* const int vi_INPUT_e_d_CONST_INT_numCyclesPerRecord, */ 100,
-		param_m_vi_CONST_INT, 
-		param_m_vi_CONST);
-	obj_MOAR_c_UCN_RUN_DATA_5.fxn_FORMATTED_WRITE("UCN_N11", true);
-	param_m_vi_CONST.erase(e_d_CONST_def_MAXERR);
-	param_m_vi_CONST[e_d_CONST_def_MAXERR] = 1e-12;
-	param_m_vi_CONST.erase(e_d_CONST_def_MAXERR1);
-	param_m_vi_CONST[e_d_CONST_def_MAXERR1] = 1e-14;
-	c_UCN_RUN_DATA obj_MOAR_c_UCN_RUN_DATA_6 = fxn_PARAMETERIZED_CONSTRUCTOR_c_UCN_RUN_DATA(
-		/* const int vi_INPUT_e_d_CONST_INT_numThreadsPerBlock_EXP_MAX, */ 5, 
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerThread_EXP, */ 12, 
-		/* const int vi_INPUT_e_d_CONST_INT_numThreads_EXP, */ 2,
-		/* const int vi_INPUT_e_d_CONST_INT_numRecordsPerUpdate, */ 16,
-		/* const int vi_INPUT_e_d_CONST_INT_numCyclesPerRecord, */ 100,
-		param_m_vi_CONST_INT, 
-		param_m_vi_CONST);
-	obj_MOAR_c_UCN_RUN_DATA_6.fxn_FORMATTED_WRITE("UCN_N12", true);
-	
+	// c_UCN_RUN_DATA obj_MOAR_c_UCN_RUN_DATA_1 = fxn_PARAMETERIZED_CONSTRUCTOR_c_UCN_RUN_DATA(
+		// /* const int vi_INPUT_e_d_CONST_INT_numThreadsPerBlock_EXP_MAX, */ 5, 
+		// /* const int vi_INPUT_e_d_CONST_INT_numRecordsPerThread_EXP, */ 10, 
+		// /* const int vi_INPUT_e_d_CONST_INT_numThreads_EXP, */ 8,
+		// /* const int vi_INPUT_e_d_CONST_INT_numRecordsPerUpdate, */ 16,
+		// /* const int vi_INPUT_e_d_CONST_INT_numCyclesPerRecord, */ 1000,
+		// param_m_vi_CONST_INT,  
+		// param_m_vi_CONST);
 
 	// int vi_FINAL_RECORD = obj_MOAR_c_UCN_RUN_DATA_0.fvci_h_CONST(e_d_CONST_INT_numRecordsPerThread) - 1;
 	// for(int i = 0; i<obj_MOAR_c_UCN_RUN_DATA_0.fvci_h_CONST(e_d_CONST_INT_numThreads); i++)

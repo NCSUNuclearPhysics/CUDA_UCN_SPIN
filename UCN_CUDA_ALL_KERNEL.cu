@@ -34,36 +34,10 @@
 
 #include "UCN_CUDA_ALL_KERNEL.cuh"
 
-// #if (_FORCE_CPU_COMPILATION_!=0)
-	// const int *d_CONST_INT;// [e_d_CONST_INT_LAST];
-	// const double *d_CONST;// [e_d_CONST_LAST];
-// #else
-
-// #endif
 __constant__ int d_CONST_INT[e_d_CONST_INT_LAST];
 __constant__ double d_CONST[e_d_CONST_LAST];
-__device__ int getGlobal_blockId_3D()
-{
-	int vi_return_value;
-	int blockId = blockIdx.x + 
-		(blockIdx.y * gridDim.x)	+ (
-		gridDim.x * gridDim.y * blockIdx.z);
-	vi_return_value = blockId;
-	return vi_return_value;
-}
-__device__ int getGlobalIdx_3D_3D()
-{
-	int vi_return_value;
-	int blockId = getGlobal_blockId_3D();
-	int threadId = 
-	(blockId * blockDim.x * blockDim.y * blockDim.z) + 
-	threadIdx.z * (blockDim.x * blockDim.y) + 
-	threadIdx.y * blockDim.x + 
-	threadIdx.x;
-	vi_return_value = threadId;
-	return vi_return_value;
-}
-__device__ __host__ int CUDA_ipow( int base, int exp)
+
+__device__ int CUDA_ipow( int base, int exp)
 {
 	int result = -1;
 	if (exp<0) result = 0;
@@ -78,7 +52,26 @@ __device__ __host__ int CUDA_ipow( int base, int exp)
 	}
   return result;
 }
-__device__ __host__ int fvi_ISOLATE_INT_RANGE( int vi_INPUT, int vi_MSB, int vi_LSB)
+__device__ int getGlobal_blockId_3D()
+{
+	int blockId = blockIdx.x + 
+		(blockIdx.y * gridDim.x)	+ (
+		gridDim.x * gridDim.y * blockIdx.z);
+	return blockId;
+}
+__device__ int getGlobalIdx_3D_3D()
+{
+	int blockId = getGlobal_blockId_3D();
+	int threadId = 
+		(blockId * blockDim.x * blockDim.y * blockDim.z) + 
+		threadIdx.z * (blockDim.x * blockDim.y) + 
+		threadIdx.y * blockDim.x + 
+		threadIdx.x;
+	return threadId;
+	// int vi_RETURN_VALUE = ( blockIdx.x * blockDim.x + threadIdx.x );
+	// return vi_RETURN_VALUE
+}
+__device__ int fvi_ISOLATE_INT_RANGE( int vi_INPUT, int vi_MSB, int vi_LSB)
 {
 	int vi_ABS_INPUT = vi_INPUT < 0 ? -vi_INPUT : vi_INPUT;
 	int vi_INDEX, vi_MOD;
@@ -91,7 +84,7 @@ __device__ __host__ int fvi_ISOLATE_INT_RANGE( int vi_INPUT, int vi_MSB, int vi_
 	if ( vi_FINAL != ( vi_INTERMEDIATE * CUDA_ipow(2, vi_LSB - 1))) vi_FINAL = -1;
 	return vi_FINAL;
 }
-__device__ __host__ double CUDA_theta( double x, double y, double z)
+__device__ /*__host__*/ double CUDA_theta( double x, double y, double z)
 {
   double temp;
   if ( (z!=0) && ((x*x+y*y)!=0) ) temp = atan2(sqrt(x*x+y*y),z);
@@ -100,21 +93,21 @@ __device__ __host__ double CUDA_theta( double x, double y, double z)
   if (temp >= d_CONST[e_d_CONST_def_PI]) temp=2*d_CONST[e_d_CONST_def_PI]-temp;	
   return(temp);
 }
-__device__ __host__ double CUDA_ro( double x, double y)
+__device__ /*__host__*/ double CUDA_ro( double x, double y)
 {
 	double solution;
   if (x*x+y*y != 0) solution = sqrt(x*x + y*y);
   else solution = ( d_CONST[e_d_CONST_def_TINY] );
 	return solution;
 }
-__device__ __host__ double CUDA_r( double x, double y, double z)
+__device__ /*__host__*/ double CUDA_r( double x, double y, double z)
 {
   double solution;
   if ((x*x+y*y+z*z)!= 0) solution = (sqrt(x*x+y*y+z*z));
   else solution = ( d_CONST[e_d_CONST_def_TINY] );
   return solution;
 }
-__device__ __host__ double CUDA_phi( double x, double y)
+__device__ /*__host__*/ double CUDA_phi( double x, double y)
 {
   double solution; 
   if (x!=0)
@@ -123,7 +116,7 @@ __device__ __host__ double CUDA_phi( double x, double y)
     solution = ((d_CONST[e_d_CONST_def_PI]/2.0));
   return solution;
 }
-__device__ __host__ double CUDA_SPIN_X( double spinor_0, double spinor_1, double spinor_2, double spinor_3 )
+__device__ /*__host__*/ double CUDA_SPIN_X( double spinor_0, double spinor_1, double spinor_2, double spinor_3 )
 {
 	double xhat1;
   if (d_CONST[e_d_CONST_INT_FLAG_CLASSICAL_SPIN]==0) xhat1 = spinor_1;
@@ -134,7 +127,7 @@ __device__ __host__ double CUDA_SPIN_X( double spinor_0, double spinor_1, double
 	}
 	return xhat1;
 }
-__device__ __host__ double CUDA_SPIN_Y( double spinor_0, double spinor_1, double spinor_2, double spinor_3 )
+__device__ /*__host__*/ double CUDA_SPIN_Y( double spinor_0, double spinor_1, double spinor_2, double spinor_3 )
 {
 	double yhat1;
   if (d_CONST[e_d_CONST_INT_FLAG_CLASSICAL_SPIN]==0) yhat1 = spinor_2;
@@ -146,7 +139,7 @@ __device__ __host__ double CUDA_SPIN_Y( double spinor_0, double spinor_1, double
 	}
   return yhat1;
 }
-__device__ __host__ double CUDA_SPIN_Z( double spinor_0, double spinor_1, double spinor_2, double spinor_3 )
+__device__ /*__host__*/ double CUDA_SPIN_Z( double spinor_0, double spinor_1, double spinor_2, double spinor_3 )
 {
   double zhat1;
   if (d_CONST[e_d_CONST_INT_FLAG_CLASSICAL_SPIN]==0) zhat1 = spinor_3;
@@ -159,7 +152,7 @@ __device__ __host__ double CUDA_SPIN_Z( double spinor_0, double spinor_1, double
 	}
 	return zhat1;
 }
-__device__ __host__ int CUDA_SPIN_XVS_XYZ( 
+__device__ /*__host__*/ int CUDA_SPIN_XVS_XYZ( 
 	double spin[],
 	double xvs[])
 {	
@@ -167,7 +160,7 @@ __device__ __host__ int CUDA_SPIN_XVS_XYZ(
 	spin[1] = CUDA_SPIN_Y(xvs[6], xvs[7], xvs[8], xvs[9]);
 	spin[2] = CUDA_SPIN_Z(xvs[6], xvs[7], xvs[8], xvs[9]);
 }
-__device__ __host__ double CUDA_SPIN_XVS_SINGLE( 
+__device__ /*__host__*/ double CUDA_SPIN_XVS_SINGLE( 
 	double xvs[],
 	int vi_X0_Y1_Z2)
 {
@@ -177,7 +170,7 @@ __device__ __host__ double CUDA_SPIN_XVS_SINGLE(
 	if (vi_X0_Y1_Z2==2) vd_RETURN_VALUE = CUDA_SPIN_Z(xvs[6], xvs[7], xvs[8], xvs[9]);
 	return vd_RETURN_VALUE;
 }
-__device__ __host__ double CUDA_polcalc_XVS( 
+__device__ /*__host__*/ double CUDA_polcalc_XVS( 
 	double bb1x, 
 	double bb1y, 
 	double bb1z, 
@@ -207,7 +200,7 @@ __device__ __host__ double CUDA_polcalc_XVS(
   polarization = xhat1*bxhat + yhat1*byhat + zhat1*bzhat;
   return(polarization);
 }
-__device__ __host__ int CUDA_Mag_ROHM_HOLLEY_XVS( double xvs[], double BField[] )
+__device__ /*__host__*/ int CUDA_Mag_ROHM_HOLLEY_XVS( double xvs[], double BField[] )
 {
 	double xi, yi, zi, l, zoff, zoff2, zcent, a0, rcoil, lcoil, rsol, bmax, b0, bpr, bpp, bppp, zrf, lsol,sinth0,costh0, bc0, sinthc0, costhc0, bcc0;
 	zoff = 0.295;
@@ -313,7 +306,7 @@ __device__ __host__ int CUDA_Mag_ROHM_HOLLEY_XVS( double xvs[], double BField[] 
 }
 
 
-__device__ __host__ int CUDA_dB_ROHM_HOLLEY_XVS( double xvs[], double BField[], double dField_1D_FLAT[])
+__device__ /*__host__*/ int CUDA_dB_ROHM_HOLLEY_XVS( double xvs[], double BField[], double dField_1D_FLAT[])
 {
 	double xi, yi, zi, l, zoff, zoff2, zcent, a0, rcoil, lcoil, rsol, bmax, b0, bpr, bpp, bppp, zrf, lsol,sinth0,costh0, bc0, sinthc0, costhc0, bcc0;
 	zoff = 0.295;
@@ -414,14 +407,14 @@ __device__ __host__ int CUDA_dB_ROHM_HOLLEY_XVS( double xvs[], double BField[], 
 	/* return(result); */
 	return 0;
 }
-__device__ __host__ int CUDA_Mag_CONSTANT_XVS( double xvs[], double BField[])
+__device__ /*__host__*/ int CUDA_Mag_CONSTANT_XVS( double xvs[], double BField[])
 {
 	BField[0] = 0.0;
 	BField[1] = 0.0;
 	BField[2] = 1.0;
 	return 0;
 }
-__device__ __host__ int CUDA_dB_CONSTANT_XVS( double xvs[], double BField[], double dField_1D_FLAT[])
+__device__ /*__host__*/ int CUDA_dB_CONSTANT_XVS( double xvs[], double BField[], double dField_1D_FLAT[])
 {
 	dField_1D_FLAT[0] = 0.0;
 	dField_1D_FLAT[1] = 0.0;
@@ -434,19 +427,19 @@ __device__ __host__ int CUDA_dB_CONSTANT_XVS( double xvs[], double BField[], dou
 	dField_1D_FLAT[8] = 0.0;
 	return 0;
 }
-__device__ __host__ int CUDA_Mag_XVS( double xvs[], double BField[])
+__device__ /*__host__*/ int CUDA_Mag_XVS( double xvs[], double BField[])
 {
 	if (d_CONST_INT[e_d_CONST_INT_FLAG_MAGNETIC]==1) return CUDA_Mag_ROHM_HOLLEY_XVS( xvs, BField );
 	else if (d_CONST_INT[e_d_CONST_INT_FLAG_MAGNETIC]==2) return CUDA_Mag_CONSTANT_XVS( xvs, BField );
 	else return -1;
 }
-__device__ __host__ int CUDA_dB_XVS( double xvs[], double BField[], double dField_1D_FLAT[])
+__device__ /*__host__*/ int CUDA_dB_XVS( double xvs[], double BField[], double dField_1D_FLAT[])
 {
 	if (d_CONST_INT[e_d_CONST_INT_FLAG_MAGNETIC]==1) return CUDA_dB_ROHM_HOLLEY_XVS( xvs, BField, dField_1D_FLAT);
 	else if (d_CONST_INT[e_d_CONST_INT_FLAG_MAGNETIC]==2) return CUDA_dB_CONSTANT_XVS( xvs, BField, dField_1D_FLAT);
 	else return -1;
 }
-__device__ __host__ int CUDA_RF_BFIELD( double t, double xvs[],	double extra_brf[])
+__device__ /*__host__*/ int CUDA_RF_BFIELD( double t, double xvs[],	double extra_brf[])
 {
 		double rfstr = d_CONST[e_d_CONST_RF_BFIELD_MAG];
 		double  omega,btoomega,zrf,zdist,zdelta;
@@ -463,7 +456,7 @@ __device__ __host__ int CUDA_RF_BFIELD( double t, double xvs[],	double extra_brf
 		
 		return 0;
 }
-__device__ __host__ int CUDA_derivs_XVS( 
+__device__ /*__host__*/ int CUDA_derivs_XVS( 
 	double t,
 	double xvs[],
 	double dxvsdt[],
@@ -546,64 +539,6 @@ __device__ __host__ int CUDA_derivs_XVS(
   // Classical Description of Spin 
   // NB moment has "I=1/2" already... 
 	dxvsdt[6] = 0.0;
-	dxvsdt[7] = d_CONST_INT[e_d_CONST_NEUTRON_GYROMAG_MOMENT]*(xvs[8]*BField[2] - xvs[9]*BField[1]);
-	dxvsdt[8] = d_CONST_INT[e_d_CONST_NEUTRON_GYROMAG_MOMENT]*(xvs[9]*BField[0] - xvs[7]*BField[2]);
-	dxvsdt[9] = d_CONST_INT[e_d_CONST_NEUTRON_GYROMAG_MOMENT]*(xvs[7]*BField[1] - xvs[8]*BField[0]);
-	// ihd/dt = (moment)*(sigma)*B 
-  // NB moment has "I=1/2" already... 
-  // dxvsdt[6] = btoomega * ( (BField[2] * xvs[7]) + (BField[0] * xvs[9]) - (BField[1] * xvs[8]));
-  // dxvsdt[7] = btoomega * (-(BField[2] * xvs[6]) - (BField[0] * xvs[8]) - (BField[1] * xvs[9]));
-  // dxvsdt[8] = btoomega * (-(BField[2] * xvs[9]) + (BField[0] * xvs[7]) + (BField[1] * xvs[6]));
-  // dxvsdt[9] = btoomega * ( (BField[2] * xvs[8]) - (BField[0] * xvs[6]) + (BField[1] * xvs[7]));
-  return 0;
-}
-
-__device__ __host__ int CUDA_derivs_XVS_SIMPLIFIED( 
-	double t,
-	double xvs[],
-	double dxvsdt[],
-	double BField[],
-	double dField_1D_FLAT[])
-{	
-	double x,y,z;	/* Cartesian coordinates */
-  double rad, th;	/* Polar coordinates */
-  double B; 	/* Magnitude of B */
-  int Bgood;
-  double spin[3];
-	CUDA_SPIN_XVS_XYZ(spin, xvs);
-	x=xvs[0];
-  y=xvs[1];
-  z=xvs[2];
-  rad=CUDA_r(x,y,z);
-  th=CUDA_theta(x,y,z);
-  dxvsdt[0]=xvs[3]; /* derivative of x = v in x direction */
-  dxvsdt[1]=xvs[4]; /* ditto for y */
-  dxvsdt[2]=xvs[5]; /* ditto for z */
-  dxvsdt[3]=0; /* initializing acceleration in x direction */
-  dxvsdt[4]=d_CONST[e_d_CONST_def_GRAVITY]; /* ditto for y */
-  dxvsdt[5]=0; /* ditto for z */
-	BField[0] = 0.0;
-	BField[1] = 0.0;
-	BField[2] = 1.0;
-	dField_1D_FLAT[0] = 0.0;
-	dField_1D_FLAT[1] = 0.0;
-	dField_1D_FLAT[2] = 0.0;
-	dField_1D_FLAT[3] = 0.0;
-	dField_1D_FLAT[4] = 0.0;
-	dField_1D_FLAT[5] = 0.0;
-	dField_1D_FLAT[6] = 0.0;
-	dField_1D_FLAT[7] = 0.0;
-	dField_1D_FLAT[8] = 0.0;
-  B = sqrt( BField[0]*BField[0]+BField[1]*BField[1]+BField[2]*BField[2]);
-  Bgood = CUDA_dB_XVS(xvs, BField, dField_1D_FLAT);
-	dxvsdt[4]  += d_CONST[e_d_CONST_def_GRAVITY];
-	double rfstr = d_CONST[e_d_CONST_RF_BFIELD_MAG];
-	double  brf[4],omega,btoomega,zrf,zdist,zdelta;
-	btoomega = d_CONST[e_d_CONST_def_MOMENT]/d_CONST[e_d_CONST_def_HBAR];  // coeff. for psi-dot 
-	
-  // Classical Description of Spin 
-  // NB moment has "I=1/2" already... 
-	dxvsdt[6] = 0.0;
 	dxvsdt[7] = btoomega*(xvs[8]*BField[2] - xvs[9]*BField[1]);
 	dxvsdt[8] = btoomega*(xvs[9]*BField[0] - xvs[7]*BField[2]);
 	dxvsdt[9] = btoomega*(xvs[7]*BField[1] - xvs[8]*BField[0]);
@@ -615,7 +550,7 @@ __device__ __host__ int CUDA_derivs_XVS_SIMPLIFIED(
   // dxvsdt[9] = btoomega * ( (BField[2] * xvs[8]) - (BField[0] * xvs[6]) + (BField[1] * xvs[7]));
   return 0;
 }
-__device__ __host__ int CUDA_rkck_XVS( 
+__device__ /*__host__*/ int CUDA_rkck_XVS( 
 	double *d_IO, 
 	int *d_IO_INT, 
 	int vi_RECORD,
@@ -652,7 +587,7 @@ __device__ __host__ int CUDA_rkck_XVS(
   for (i = 0; i<10; i++) xvserr[i]=h*(dc1*dxvsdt[i]+dc3*ak3[i]+dc4*ak4[i]+dc5*ak5[i]+dc6*ak6[i]);
   return 0;
 }
-__device__ __host__ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
+__device__ /*__host__*/ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
 	double *d_IO, 
 	int *d_IO_INT,
 	int vi_RECORD, 
@@ -776,7 +711,7 @@ __device__ __host__ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
 	/////////////////////////////////////////////////////////////////////////
 	
 	/* nrerror("stepsize underflow in rkqs"); */ /* diag */
-	if ((*t + hcurrent) == *t) return_value = 1 /*e_RKQS_ERROR_STEPSIZE_UNDERFLOW*/;
+	if ((*t + hcurrent) == *t) return_value = e_RKQS_ERROR_STEPSIZE_UNDERFLOW;
 	else if (return_value_xv==0 && return_value_s==0)
 	{
 		for (i=0; i<10; i++)
@@ -795,7 +730,7 @@ __device__ __host__ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
 		{
 			*hnext = fmin ( fmin (hnext_xv, hnext_s) , fmin ( d_CONST[e_d_CONST_tframe], d_CONST[e_d_CONST_tframe_SPIN]));
 		}
-		return_value = 0 /*e_RKQS_ERROR_NONE*/;
+		return_value = e_RKQS_ERROR_NONE;
 	}
 	else
 	{
@@ -804,25 +739,25 @@ __device__ __host__ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
 		if (return_value_xv==1 && return_value_s==0) 
 		{
 			*hnext = hnext_xv;
-			return_value = 2 /*e_RKQS_ERROR_XV_BOUNDS*/;
+			return_value = e_RKQS_ERROR_XV_BOUNDS;
 		}
 		else if (return_value_xv==0 && return_value_s==1)
 		{
 			*hnext = hnext_s;
-			return_value = 3 /*e_RKQS_ERROR_SPIN_BOUNDS*/;
+			return_value = e_RKQS_ERROR_SPIN_BOUNDS;
 		}
 		else if (return_value_xv==1 && return_value_s==1)
 		{
 			if ((hnext_xv<=0.0 && hnext_s<=0.0) || (hnext_xv>0.0 && hnext_s>0.0>=0.0))
 			{
-				return_value = 4 /*e_RKQS_ERROR_COMBINED_BOUNDS*/;
+				return_value = e_RKQS_ERROR_COMBINED_BOUNDS;
 				if (hnext_xv>0.0 && hnext_s>0.0) *hnext = fmin (hnext_xv, hnext_s);
 				else if (hnext_xv<=0.0 && hnext_s<=0.0) *hnext = fmin (hnext_xv, hnext_s);
 			}
-			else return_value = 5 /*e_RKQS_ERROR_REVERSED_INTERVAL*/;
+			else return_value = e_RKQS_ERROR_REVERSED_INTERVAL;
 			
 		}
-		else return_value = 6 /*e_RKQS_ERROR_UNKNOWN*/;
+		else return_value = e_RKQS_ERROR_UNKNOWN;
 	}
 	
   /////////////////////////////////////////////////////////////////////////
@@ -850,36 +785,32 @@ __device__ __host__ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
 	// CUDA_RECORD_INT(d_IO_INT, vi_RECORD, e_d_IO_INT_RKQS_ERROR, return_value);
 	return return_value;
 }
-__device__ int CUDA_RECORD_INT( 
+__device__ /*__host__*/ int CUDA_RECORD_INT( 
 	int *d_IO_INT, int vi_RECORD, int e_d_IO_INT_PARAM, int vi_PARAM)
 {
 	int vi_INT_IO_OFFSET = (getGlobalIdx_3D_3D()*d_CONST_INT[e_d_CONST_INT_numRecordsPerThread] + vi_RECORD)*e_d_IO_INT_LAST;
 	d_IO_INT[vi_INT_IO_OFFSET + e_d_IO_INT_PARAM] = vi_PARAM;
 	return 0;
 }
-__device__ int CUDA_RECORD_DOUBLE( 
+__device__ /*__host__*/ int CUDA_RECORD_DOUBLE( 
 	double *d_IO,  int vi_RECORD, int e_d_IO_PARAM, double vd_PARAM)
 {
 	int vi_DOUBLE_IO_OFFSET = (getGlobalIdx_3D_3D()*d_CONST_INT[e_d_CONST_INT_numRecordsPerThread] + vi_RECORD)*e_d_IO_LAST;
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_PARAM] = vd_PARAM;
 	return 0;
 }
-__device__ __host__ int CUDA_RECORD_XVS( 
-	int l_GlobadIdx_3D_3D, double *d_IO, int *d_IO_INT,  int *p_vi_RECORD, 
+__device__ /*__host__*/ int CUDA_RECORD_XVS( 
+	double *d_IO, int *d_IO_INT,  int *p_vi_RECORD, 
 	double l_time_CURRENT, double l_xvs[], double l_epsilon[], double l_xvs_scal[], double l_dxvsdt[], 
-	double l_BField[], double l_dField_1D_FLAT[], double l_pol, int l_rkqs_TRIED, double l_hnext, double l_hdid)
+	double l_BField[], double l_dField_1D_FLAT[], double l_pol, int l_rkqs_TRIED, double l_hnext)
 {
-	int vi_DOUBLE_IO_OFFSET = (l_GlobadIdx_3D_3D*d_CONST_INT[e_d_CONST_INT_numRecordsPerThread] + (*p_vi_RECORD))*e_d_IO_LAST;
-	int vi_INT_IO_OFFSET = (l_GlobadIdx_3D_3D*d_CONST_INT[e_d_CONST_INT_numRecordsPerThread] + (*p_vi_RECORD))*e_d_IO_INT_LAST;
-	
-	int vi_DOUBLE_IO_OFFSET_INITIAL = l_GlobadIdx_3D_3D*d_CONST_INT[e_d_CONST_INT_numRecordsPerThread]*e_d_IO_LAST;
-	int vi_INT_IO_OFFSET_INITIAL = l_GlobadIdx_3D_3D*d_CONST_INT[e_d_CONST_INT_numRecordsPerThread]*e_d_IO_INT_LAST;
-	
+	int vi_DOUBLE_IO_OFFSET = (getGlobalIdx_3D_3D()*d_CONST_INT[e_d_CONST_INT_numRecordsPerThread] + (*p_vi_RECORD))*e_d_IO_LAST;
+	int vi_INT_IO_OFFSET = (getGlobalIdx_3D_3D()*d_CONST_INT[e_d_CONST_INT_numRecordsPerThread] + (*p_vi_RECORD))*e_d_IO_INT_LAST;
 	
 	d_IO_INT[vi_INT_IO_OFFSET + e_d_IO_INT_ERROR] = 0;
-	d_IO_INT[vi_INT_IO_OFFSET + e_d_IO_INT_THREAD] = l_GlobadIdx_3D_3D;
+	d_IO_INT[vi_INT_IO_OFFSET + e_d_IO_INT_THREAD] = getGlobalIdx_3D_3D();
 	d_IO_INT[vi_INT_IO_OFFSET + e_d_IO_INT_RECORD] = (*p_vi_RECORD);
-  d_IO_INT[vi_INT_IO_OFFSET + e_d_IO_INT_RKQS_STEPS] = l_rkqs_TRIED;
+  d_IO_INT[vi_INT_IO_OFFSET + e_d_IO_INT_RKQS_STEPS] = l_rkqs_TRIED; 
 	
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_T] = l_time_CURRENT;
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_X] = l_xvs[0];
@@ -888,43 +819,27 @@ __device__ __host__ int CUDA_RECORD_XVS(
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_VX] = l_xvs[3];
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_VY] = l_xvs[4];
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_VZ] = l_xvs[5];
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SPINNOR_0] = l_xvs[6];
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SPINNOR_1] = l_xvs[7];
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SPINNOR_2] = l_xvs[8];
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SPINNOR_3] = l_xvs[9];
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_RED_VX] = l_dxvsdt[0];
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_RED_VY] = l_dxvsdt[1];
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_RED_VZ] = l_dxvsdt[2];  
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_AX] = l_dxvsdt[3];
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_AY] = l_dxvsdt[4];
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_AZ] = l_dxvsdt[5];
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_DDT_SPINNOR_0] = l_dxvsdt[6]; 
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_DDT_SPINNOR_1] = l_dxvsdt[7]; 
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_DDT_SPINNOR_2] = l_dxvsdt[8]; 
-// 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SX] = CUDA_SPIN_XVS_SINGLE(l_xvs, 0);
-// 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SY] = CUDA_SPIN_XVS_SINGLE(l_xvs, 1);
-// 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SZ] = CUDA_SPIN_XVS_SINGLE(l_xvs, 2);
+	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SX] = CUDA_SPIN_XVS_SINGLE(l_xvs, 0);
+	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SY] = CUDA_SPIN_XVS_SINGLE(l_xvs, 1);
+	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SZ] = CUDA_SPIN_XVS_SINGLE(l_xvs, 2);
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_X] = l_epsilon[0];
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_Y] = l_epsilon[1];
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_Z] = l_epsilon[2];
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_VX] = l_epsilon[3];
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_VY] = l_epsilon[4];
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_VZ] = l_epsilon[5];
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_SPINNOR_0] = l_epsilon[6]; 
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_SPINNOR_1] = l_epsilon[7]; 
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_SPINNOR_2] = l_epsilon[8]; 
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_SPINNOR_3] = l_epsilon[9]; 	
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_X] = l_xvs_scal[0];
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_Y] = l_xvs_scal[1];
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_Z] = l_xvs_scal[2];
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_VX] = l_xvs_scal[3];
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_VY] = l_xvs_scal[4];
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_VZ] = l_xvs_scal[5];
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_SPINNOR_0] = l_xvs_scal[6]; 
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_SPINNOR_1] = l_xvs_scal[7]; 
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_SPINNOR_2] = l_xvs_scal[8]; 
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_SPINNOR_3] = l_xvs_scal[9];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_DDT_SPINNOR_3] = l_dxvsdt[9]; 
+	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_RED_VX] = l_dxvsdt[0];
+	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_RED_VY] = l_dxvsdt[1];
+	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_RED_VZ] = l_dxvsdt[2];  
+	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_AX] = l_dxvsdt[3];
+	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_AY] = l_dxvsdt[4];
+	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_AZ] = l_dxvsdt[5];
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_BX] = l_BField[0];
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_BY] = l_BField[1];
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_BZ] = l_BField[2];
@@ -937,47 +852,36 @@ __device__ __host__ int CUDA_RECORD_XVS(
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_dB_ZDX] = l_dField_1D_FLAT[6];
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_dB_ZDY] = l_dField_1D_FLAT[7];
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_dB_ZDZ] = l_dField_1D_FLAT[8];
-	
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_CORRECT_X] = 
-		d_IO[vi_DOUBLE_IO_OFFSET_INITIAL + e_d_IO_X] + 
-		d_IO[vi_DOUBLE_IO_OFFSET_INITIAL + e_d_IO_VX]*l_time_CURRENT;
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_CORRECT_Y] = 
-		d_IO[vi_DOUBLE_IO_OFFSET_INITIAL + e_d_IO_Z] + 
-		d_IO[vi_DOUBLE_IO_OFFSET_INITIAL + e_d_IO_VY]*l_time_CURRENT +
-		0.5*l_time_CURRENT*l_time_CURRENT*d_CONST[e_d_CONST_def_GRAVITY];
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_CORRECT_Z] = 
-		d_IO[vi_DOUBLE_IO_OFFSET_INITIAL + e_d_IO_Z] + 
-		d_IO[vi_DOUBLE_IO_OFFSET_INITIAL + e_d_IO_VZ]*l_time_CURRENT;
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_CORRECT_VX] = 
-		d_IO[vi_DOUBLE_IO_OFFSET_INITIAL + e_d_IO_VZ];
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_CORRECT_VY] = 
-		d_IO[vi_DOUBLE_IO_OFFSET_INITIAL + e_d_IO_VY] +
-		l_time_CURRENT*d_CONST[e_d_CONST_def_GRAVITY];
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_CORRECT_VZ] = 
-		d_IO[vi_DOUBLE_IO_OFFSET_INITIAL + e_d_IO_VZ];
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_CORRECT_SPINNOR_0] = 1.0;
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_CORRECT_SPINNOR_1] = 
-		cos(acos(d_IO[vi_DOUBLE_IO_OFFSET_INITIAL + e_d_IO_CORRECT_SPINNOR_1]/d_IO[vi_DOUBLE_IO_OFFSET_INITIAL + e_d_IO_CORRECT_SPINNOR_3]) +
-		l_time_CURRENT*d_CONST_INT[e_d_CONST_NEUTRON_GYROMAG_MOMENT]);
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_CORRECT_SPINNOR_2] = 
-		sin(asin(d_IO[vi_DOUBLE_IO_OFFSET_INITIAL + e_d_IO_CORRECT_SPINNOR_1]/d_IO[vi_DOUBLE_IO_OFFSET_INITIAL + e_d_IO_CORRECT_SPINNOR_3]) +
-		l_time_CURRENT*d_CONST_INT[e_d_CONST_NEUTRON_GYROMAG_MOMENT]);
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_CORRECT_SPINNOR_3] = d_IO[vi_DOUBLE_IO_OFFSET_INITIAL + e_d_IO_SPINNOR_3];
-
+	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SPINNOR_0] = l_xvs[6];
+	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SPINNOR_1] = l_xvs[7];
+	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SPINNOR_2] = l_xvs[8];
+	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SPINNOR_3] = l_xvs[9];
+	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_DDT_SPINNOR_0] = l_dxvsdt[6]; 
+	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_DDT_SPINNOR_1] = l_dxvsdt[7]; 
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_DDT_SPINNOR_2] = l_dxvsdt[8]; 
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_DDT_SPINNOR_3] = l_dxvsdt[9]; 
+	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_SPINNOR_0] = l_epsilon[6]; 
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_SPINNOR_1] = l_epsilon[7]; 
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_SPINNOR_2] = l_epsilon[8]; 
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_SPINNOR_3] = l_epsilon[9]; 	
+	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_SPINNOR_0] = l_xvs_scal[6]; 
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_SPINNOR_1] = l_xvs_scal[7]; 
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_SPINNOR_2] = l_xvs_scal[8]; 
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_SPINNOR_3] = l_xvs_scal[9];
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_POLARIZATION] = l_pol;
 	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_HNEXT] = l_hnext;
-	d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_HDID] = l_hdid;
+	
 	(*p_vi_RECORD)++;
 	
 	return 0;
 }
 
-__device__ __host__ void GENERIC_PIECEWISE_MULTI_XVS_RKQS_LOOP(
-		int l_GlobadIdx_3D_3D,
-		double *d_IO, 
-		int *d_IO_INT, 
-		int numRecordsStartCurrent,
-		int numRecordsEndCurrent)
+
+__global__ void GENERIC_PIECEWISE_KERNEL_MULTI_XVS_RKQS_LOOP(
+  double *d_IO, 
+  int *d_IO_INT, 
+	int numRecordsStart,
+	int numRecordsEnd)
 {
 	int vi_RECORD_TEST_0, vi_RECORD_TEST_1, vi_RECORD_TEST_2, vi_RECORD_TEST_3,	vi_RECORD_TEST_4;
 	int vi_RECORD_IO_OFFSET_END = 0, vi_IO_OFFSET_END, vi_IO_INT_OFFSET_END, vi_IO_DOUBLE_OFFSET_END;
@@ -993,7 +897,7 @@ __device__ __host__ void GENERIC_PIECEWISE_MULTI_XVS_RKQS_LOOP(
 	double l_dField_1D_FLAT[9];
 	double l_pol;
 	double l_hnext, l_hdid, l_htry;
-	int vi_RECORD_IO_OFFSET_START = l_GlobadIdx_3D_3D*d_CONST_INT[e_d_CONST_INT_numRecordsPerThread] + numRecordsStartCurrent;
+	int vi_RECORD_IO_OFFSET_START = getGlobalIdx_3D_3D()*d_CONST_INT[e_d_CONST_INT_numRecordsPerThread] + numRecordsStart;
 	int vi_IO_OFFSET_START = vi_RECORD_IO_OFFSET_START*e_d_IO_LAST;
 	int vi_IO_INT_OFFSET_START = vi_RECORD_IO_OFFSET_START*e_d_IO_INT_LAST;
 	int vi_IO_DOUBLE_OFFSET_START = vi_RECORD_IO_OFFSET_START*e_d_IO_LAST;
@@ -1043,11 +947,8 @@ __device__ __host__ void GENERIC_PIECEWISE_MULTI_XVS_RKQS_LOOP(
 	// else l_htry = fmin(d_CONST[e_d_CONST_h1],d_CONST[e_d_CONST_h1_SPIN]);
 	vi_RKQS_STEP = 0;
 	return_value_RKQS = 0;
-	vi_RECORD = numRecordsStartCurrent;
-	// printf("\nTEST BEFORE LOOP RECORD START %d AND END %d", vi_RECORD, numRecordsEndCurrent);
-	while(vi_RECORD<numRecordsEndCurrent)
+	while(vi_RECORD<numRecordsEnd)
 	{
-		// printf("\nTEST INSIDE LOOP RECORD %d", vi_RECORD);
 		l_htry = l_hnext;
 		l_xvs_scal[0]=fabs(l_xvs[0])+fabs(l_dxvsdt[0]*l_htry)+d_CONST[e_d_CONST_def_TINY];
 		l_xvs_scal[1]=fabs(l_xvs[1])+fabs(l_dxvsdt[1]*l_htry)+d_CONST[e_d_CONST_def_TINY];
@@ -1077,9 +978,9 @@ __device__ __host__ void GENERIC_PIECEWISE_MULTI_XVS_RKQS_LOOP(
 		{
 			CUDA_derivs_XVS(l_time_CURRENT, l_xvs, l_dxvsdt, l_BField, l_dField_1D_FLAT);
 			l_pol = CUDA_polcalc_XVS(l_BField[0], l_BField[1], l_BField[2], l_xvs);
-			CUDA_RECORD_XVS(l_GlobadIdx_3D_3D, d_IO, d_IO_INT,  &vi_RECORD, 
+			CUDA_RECORD_XVS(d_IO, d_IO_INT,  &vi_RECORD, 
 				l_time_CURRENT, l_xvs, l_epsilon, l_xvs_scal, l_dxvsdt, 
-				l_BField, l_dField_1D_FLAT, l_pol, l_rkqs_TRIED, l_hnext, l_hdid);
+				l_BField, l_dField_1D_FLAT, l_pol, l_rkqs_TRIED, l_hnext);
 		}
 		else
 		{
@@ -1098,8 +999,7 @@ __device__ __host__ void GENERIC_PIECEWISE_MULTI_XVS_RKQS_LOOP(
 				l_dField_1D_FLAT, 
 				l_epsilon, 
 				&l_rkqs_TRIED);
-			// printf("\nTHREAD/RECORD/ERROR=%d/%d/%d",getGlobalIdx_3D_3D(),vi_RECORD,return_value_RKQS);
-			if (return_value_RKQS==0 /*e_RKQS_ERROR_NONE*/)
+			if (return_value_RKQS==e_RKQS_ERROR_NONE)
 			{
 				l_time_CURRENT = l_time_CURRENT + l_hdid;
 				CUDA_derivs_XVS(l_time_CURRENT, l_xvs, l_dxvsdt, l_BField, l_dField_1D_FLAT);
@@ -1109,9 +1009,9 @@ __device__ __host__ void GENERIC_PIECEWISE_MULTI_XVS_RKQS_LOOP(
 				if (vi_RKQS_STEP>=d_CONST_INT[e_d_CONST_INT_numCyclesPerRecord])
 				{
 					// CUDA_RECORD_DOUBLE(d_IO, vi_RECORD, e_d_IO_EXTRA_0, l_time_CURRENT);
-					CUDA_RECORD_XVS(l_GlobadIdx_3D_3D, d_IO, d_IO_INT,  &vi_RECORD, 
+					CUDA_RECORD_XVS(d_IO, d_IO_INT,  &vi_RECORD, 
 						l_time_CURRENT, l_xvs, l_epsilon, l_xvs_scal, l_dxvsdt, 
-						l_BField, l_dField_1D_FLAT, l_pol, l_rkqs_TRIED, l_hnext, l_hdid);
+						l_BField, l_dField_1D_FLAT, l_pol, l_rkqs_TRIED, l_hnext);
 					vi_RKQS_STEP = 0;
 				}
 				l_rkqs_TRIED = 0;
@@ -1127,15 +1027,15 @@ __device__ __host__ void GENERIC_PIECEWISE_MULTI_XVS_RKQS_LOOP(
 	// vi_RECORD_TEST_0 = vi_THREAD_IO_OFFSET;
 	// vi_RECORD_TEST_1 = d_CONST_INT[e_d_CONST_INT_numRecordsPerThread];
 	// vi_RECORD_TEST_2 = vi_THREAD_IO_OFFSET*d_CONST_INT[e_d_CONST_INT_numRecordsPerThread];
-	// vi_RECORD_TEST_3 = numRecordsEndCurrent;
-	// vi_RECORD_TEST_4 = vi_THREAD_IO_OFFSET*d_CONST_INT[e_d_CONST_INT_numRecordsPerThread] + numRecordsEndCurrent;
+	// vi_RECORD_TEST_3 = numRecordsEnd;
+	// vi_RECORD_TEST_4 = vi_THREAD_IO_OFFSET*d_CONST_INT[e_d_CONST_INT_numRecordsPerThread] + numRecordsEnd;
 	
-	int testsssss = l_GlobadIdx_3D_3D;
-	// vi_RECORD_IO_OFFSET_END = getGlobalIdx_3D_3D()*d_CONST_INT[e_d_CONST_INT_numRecordsPerThread] + numRecordsEndCurrent;
+	int testsssss = getGlobalIdx_3D_3D();
+	// vi_RECORD_IO_OFFSET_END = getGlobalIdx_3D_3D()*d_CONST_INT[e_d_CONST_INT_numRecordsPerThread] + numRecordsEnd;
 	// vi_IO_INT_OFFSET_END = vi_RECORD_IO_OFFSET_END*e_d_IO_INT_LAST;
-	vi_IO_INT_OFFSET_END = (testsssss * d_CONST_INT[e_d_CONST_INT_numRecordsPerThread] + numRecordsEndCurrent) * e_d_IO_INT_LAST;
+	vi_IO_INT_OFFSET_END = (testsssss * d_CONST_INT[e_d_CONST_INT_numRecordsPerThread] + numRecordsEnd) * e_d_IO_INT_LAST;
 	// vi_IO_DOUBLE_OFFSET_END = vi_RECORD_IO_OFFSET_END*e_d_IO_LAST;
-	vi_IO_DOUBLE_OFFSET_END = (testsssss * d_CONST_INT[e_d_CONST_INT_numRecordsPerThread] + numRecordsEndCurrent)*e_d_IO_LAST;
+	vi_IO_DOUBLE_OFFSET_END = (testsssss * d_CONST_INT[e_d_CONST_INT_numRecordsPerThread] + numRecordsEnd)*e_d_IO_LAST;
 
 	// d_IO[vi_IO_INT_OFFSET_END + e_d_IO_INT_RKQS_ERROR] = vi_TESTOTESTO;  
 	// d_IO[vi_IO_INT_OFFSET_END + e_d_IO_INT_RKQS_STEPS] = l_rkqs_TRIED;
@@ -1161,107 +1061,22 @@ __device__ __host__ void GENERIC_PIECEWISE_MULTI_XVS_RKQS_LOOP(
 	
 	return;
 }
-void PROXY_HOST_GENERIC_PIECEWISE_MULTI_XVS_RKQS_LOOP(
-		int l_GlobadIdx_3D_3D,
-		double *d_IO, 
-		int *d_IO_INT, 
-		int numRecordsStartCurrent,
-		int numRecordsEndCurrent)
-{
-	GENERIC_PIECEWISE_MULTI_XVS_RKQS_LOOP(
-		l_GlobadIdx_3D_3D,
-		d_IO, 
-		d_IO_INT, 
-		numRecordsStartCurrent,
-		numRecordsEndCurrent);
-	return;
-}
-__global__ void PROXY_DEVICE_GENERIC_PIECEWISE_KERNEL_MULTI_XVS_RKQS_LOOP(
-	double *d_IO, 
-	int *d_IO_INT, 
-	int numRecordsStartCurrent,
-	int numRecordsEndCurrent)
-{
-	int l_GlobadIdx_3D_3D = getGlobalIdx_3D_3D();
-	GENERIC_PIECEWISE_MULTI_XVS_RKQS_LOOP(
-		l_GlobadIdx_3D_3D,
-		d_IO, 
-		d_IO_INT, 
-		numRecordsStartCurrent,
-		numRecordsEndCurrent);
-		return;
-}
-void HOST_GENERIC_RECORD_FRAME(
+void GENERIC_RECORD_FRAME(
 	int param_numBlocks,
 	int param_numThreadsPerBlock,
   double *d_IO,
   int *d_IO_INT,
-	int numRecordsStartCurrentFrame,
-	int numRecordsEndCurrentFrame)
+	int numRecordsStart,
+	int numRecordsEnd)
 {
-	int host_threadIdxx = 0;
-	int host_threadIdxy = 0;
-	int host_threadIdxz = 0;
-	int host_blockDimx = param_numThreadsPerBlock;
-	int host_blockDimy = 1;
-	int host_blockDimz = 1;
-	int host_blockIdxx = 0;
-	int host_blockIdxy = 0;
-	int host_blockIdxz = 0;
-	int host_gridDimx = param_numBlocks;
-	int host_gridDimy = 1;
-	int host_gridDimz = 1;
-	for(host_blockIdxz = 0; host_blockIdxz<host_gridDimz; host_blockIdxz++)
-	{
-		for(host_blockIdxy = 0; host_blockIdxy<host_gridDimy; host_blockIdxy++)
-		{
-			for(host_blockIdxx = 0; host_blockIdxx<host_gridDimx; host_blockIdxx++)
-			{
-				for(host_threadIdxz = 0; host_threadIdxz<host_blockDimz; host_threadIdxz++)
-				{
-					for(host_threadIdxy = 0; host_threadIdxy<host_blockDimy; host_threadIdxy++)
-					{
-						for(host_threadIdxx = 0; host_threadIdxx<host_blockDimx; host_threadIdxx++)
-						{
-							int host_blockId = host_blockIdxx + 
-								(host_blockIdxy * host_gridDimx)	+ (
-								host_gridDimx * host_gridDimy * host_blockIdxz);
-							int host_threadId = 
-								(host_blockId * host_blockDimx * host_blockDimy * host_blockDimz) + 
-								host_threadIdxz * (host_blockDimx * host_blockDimy) + 
-								host_threadIdxy * host_blockDimx + 
-								host_threadIdxx;
-							GENERIC_PIECEWISE_MULTI_XVS_RKQS_LOOP(
-								host_threadId,
-								d_IO, 
-								d_IO_INT, 
-								numRecordsStartCurrentFrame,
-								numRecordsEndCurrentFrame);
-						}
-					}
-				}
-			}
-		}	
-	}
-	return;
-}
-void DEVICE_GENERIC_RECORD_FRAME(
-	int param_numBlocks,
-	int param_numThreadsPerBlock,
-  double *d_IO,
-  int *d_IO_INT,
-	int numRecordsStartCurrentFrame,
-	int numRecordsEndCurrentFrame)
-{
-
 	// cudaPrintfInit ();
 		// Run kernel
 	cudaThreadSynchronize();
-	PROXY_DEVICE_GENERIC_PIECEWISE_KERNEL_MULTI_XVS_RKQS_LOOP<<< param_numBlocks, param_numThreadsPerBlock >>>(
+	GENERIC_PIECEWISE_KERNEL_MULTI_XVS_RKQS_LOOP<<< param_numBlocks, param_numThreadsPerBlock >>>(
 		d_IO, 
 		d_IO_INT, 
-		numRecordsStartCurrentFrame,
-		numRecordsEndCurrentFrame);
+		numRecordsStart,
+		numRecordsEnd);
 	// GENERIC_PIECEWISE_KERNEL_MULTI_XVS<<<h_CONST_INT[e_d_CONST_INT_numBlocks],h_CONST_INT[e_d_CONST_INT_numThreadsPerBlock]>>>(
 		// d_IO, 
 		// d_IO_INT, 
@@ -1284,108 +1099,80 @@ void GENERIC_MIDDLEMAN_MULTI(
   double *h_IO,
   int *h_IO_INT)
 {
-	printf("\n\n\nelloel,lleoeooo%d shoudl be zero\n\n",0 /*e_RKQS_ERROR_NONE*/);
+	printf("\n\n\nelloel,lleoeooo%d shoudl be zero\n\n",e_RKQS_ERROR_NONE);
 	// Establish Scope parameters for simulation: 
 	// number of neutrons, for how long, how many records to keep, etc.
 	
 	// Copy passsed constant values from Host Memory (CPU front side bus RAM) to Device Constant Memory.
 	// Device Constant Memory is limited in size but accessible with close to register level latency at the the thread level due to mandatory caching in every CUDA Multi-processor.
-	
+  
 	int vi_INDEX;
+	
 	double h_UNOFFICIAL_CONST[e_d_CONST_LAST];
 	for (vi_INDEX = 0; vi_INDEX<e_d_CONST_LAST; vi_INDEX++) h_UNOFFICIAL_CONST[vi_INDEX] = h_CONST[vi_INDEX];
 	int h_UNOFFICIAL_CONST_INT[e_d_CONST_INT_LAST];
 	for (vi_INDEX = 0; vi_INDEX<e_d_CONST_INT_LAST; vi_INDEX++) h_UNOFFICIAL_CONST_INT[vi_INDEX] = h_CONST_INT[vi_INDEX];
 	
 	const int numBytesCONST = e_d_CONST_LAST*sizeof(double);
-	const int numBytesCONST_INT = e_d_CONST_INT_LAST*sizeof(int);
-	
+  const int numBytesCONST_INT = e_d_CONST_INT_LAST*sizeof(int);
+  
 	int vi_ERROR = cudaMemcpyToSymbol(d_CONST,h_UNOFFICIAL_CONST,numBytesCONST);
 	int vi_ERROR_INT = cudaMemcpyToSymbol(d_CONST_INT,h_UNOFFICIAL_CONST_INT,numBytesCONST_INT);
-
-	if(h_CONST[e_d_CONST_INT_FLAG_HOST_COMPILE]==0)
-	{
-
-		// Move passed input parameters specific to each thread from Host Memory to Device Memory (on-card RAM)
-		double *d_IO = NULL;
-		int *d_IO_INT = NULL;
-		const int numBytesIO = h_CONST_INT[e_d_CONST_INT_numRecords]*e_d_IO_LAST*sizeof(double);
-		const int numBytesIO_INT = h_CONST_INT[e_d_CONST_INT_numRecords]*e_d_IO_INT_LAST*sizeof(int);
-		cudaMalloc((void**)&d_IO, numBytesIO);
-		cudaMalloc((void**)&d_IO_INT, numBytesIO_INT);
-		cudaMemcpy(d_IO, h_IO, numBytesIO, cudaMemcpyHostToDevice);
-		cudaMemcpy(d_IO_INT, h_IO_INT, numBytesIO_INT, cudaMemcpyHostToDevice);
-		cudaThreadSynchronize();
+  
+	// Move passed input parameters specific to each thread from Host Memory to Device Memory (on-card RAM)
+  double *d_IO = NULL;
+  int *d_IO_INT = NULL;
+  const int numBytesIO = h_CONST_INT[e_d_CONST_INT_numRecords]*e_d_IO_LAST*sizeof(double);
+  const int numBytesIO_INT = h_CONST_INT[e_d_CONST_INT_numRecords]*e_d_IO_INT_LAST*sizeof(int);
+  cudaMalloc((void**)&d_IO, numBytesIO);
+  cudaMalloc((void**)&d_IO_INT, numBytesIO_INT);
+  cudaMemcpy(d_IO, h_IO, numBytesIO, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_IO_INT, h_IO_INT, numBytesIO_INT, cudaMemcpyHostToDevice);
 	
-		// Allocate where output data goes with room for all threads
-		// double *d_OUT = NULL;
-		// int *d_OUT_INT = NULL;
-		// const int numBytesOUT = h_CONST_INT[e_d_CONST_INT_numRecords]*e_d_IO_LAST*sizeof(double);
-		// const int numBytesOUT_INT = h_CONST_INT[e_d_CONST_INT_numRecords]*e_d_IO_INT_LAST*sizeof(int);
-		// cudaMalloc((void**)&d_OUT, numBytesOUT);
-		// cudaMalloc((void**)&d_OUT_INT, numBytesOUT_INT);
-		int vi_RecordsStartCurrent = 0;
-		int vi_RecordsEndCurrent = 0;
-		int vi_RecordsEndFinal = h_CONST_INT[e_d_CONST_INT_numRecordsPerThread];
-		int vi_UPDATES;
-		for (vi_UPDATES = 0; vi_RecordsEndCurrent<vi_RecordsEndFinal; vi_UPDATES++)
-		{
-			// Run kernel
-			vi_RecordsStartCurrent = vi_RecordsEndCurrent;
-			int vi_RecordsEndCurrent_TEMP =  vi_RecordsStartCurrent + h_CONST_INT[e_d_CONST_INT_numRecordsPerUpdate];
-			if (vi_RecordsEndCurrent_TEMP>vi_RecordsEndFinal) vi_RecordsEndCurrent = vi_RecordsEndFinal;
-			else vi_RecordsEndCurrent = vi_RecordsStartCurrent + h_CONST_INT[e_d_CONST_INT_numRecordsPerUpdate];
-			// vi_RecordsStartCurrent = 0;
-			// vi_RecordsEndCurrent = vi_RecordsEndFinal;
-			printf("\nStarting Records %d-%d of %d... ",vi_RecordsStartCurrent,vi_RecordsEndCurrent,h_CONST_INT[e_d_CONST_INT_numRecordsPerThread]);
-			DEVICE_GENERIC_RECORD_FRAME(
-				h_CONST_INT[e_d_CONST_INT_numBlocks],
-				h_CONST_INT[e_d_CONST_INT_numThreadsPerBlock],
-				d_IO,
-				d_IO_INT,
-				vi_RecordsStartCurrent,
-				vi_RecordsEndCurrent);
-			printf("Completed");
-		}
-		printf("\nDay o day o daylight come and me wanna go %d threads",h_CONST_INT[e_d_CONST_INT_numThreads]);
-		// Move results of output to Host Memory from Device Memory
-		cudaMemcpy(h_IO, d_IO, numBytesIO, cudaMemcpyDeviceToHost);
-		cudaMemcpy(h_IO_INT, d_IO_INT, numBytesIO_INT, cudaMemcpyDeviceToHost);
-		cudaFree(d_IO);
-		cudaFree(d_IO_INT);
-	}
-	else
+	printf("\ncheck eeeee check check");
+	cudaThreadSynchronize();
+	// Allocate where output data goes with room for all threads
+  // double *d_OUT = NULL;
+  // int *d_OUT_INT = NULL;
+  // const int numBytesOUT = h_CONST_INT[e_d_CONST_INT_numRecords]*e_d_IO_LAST*sizeof(double);
+  // const int numBytesOUT_INT = h_CONST_INT[e_d_CONST_INT_numRecords]*e_d_IO_INT_LAST*sizeof(int);
+  // cudaMalloc((void**)&d_OUT, numBytesOUT);
+  // cudaMalloc((void**)&d_OUT_INT, numBytesOUT_INT);
+	int vi_RecordsStartCurrent = 0;
+	int vi_RecordsEndCurrent = 0;
+	int vi_RecordsEndFinal = h_CONST_INT[e_d_CONST_INT_numRecordsPerThread];
+	int vi_UPDATES;
+	for (vi_UPDATES = 0; vi_RecordsEndCurrent<vi_RecordsEndFinal; vi_UPDATES++)
 	{
-		double *d_IO;
-		d_IO = h_IO;
-		int *d_IO_INT;
-		d_IO_INT = h_IO_INT;
-		int vi_RecordsStartCurrent = 0;
-		int vi_RecordsEndCurrent = 0;
-		int vi_RecordsEndFinal = h_CONST_INT[e_d_CONST_INT_numRecordsPerThread];
-		int vi_UPDATES;
-		for (vi_UPDATES = 0; vi_RecordsEndCurrent<vi_RecordsEndFinal; vi_UPDATES++)
-		{
-			// Run kernel
-			vi_RecordsStartCurrent = vi_RecordsEndCurrent;
-			int vi_RecordsEndCurrent_TEMP =  vi_RecordsStartCurrent + h_CONST_INT[e_d_CONST_INT_numRecordsPerUpdate];
-			if (vi_RecordsEndCurrent_TEMP>vi_RecordsEndFinal) vi_RecordsEndCurrent = vi_RecordsEndFinal;
-			else vi_RecordsEndCurrent = vi_RecordsStartCurrent + h_CONST_INT[e_d_CONST_INT_numRecordsPerUpdate];
-			// vi_RecordsStartCurrent = 0;
-			// vi_RecordsEndCurrent = vi_RecordsEndFinal;
-			printf("\nStarting Records %d-%d of %d... ",vi_RecordsStartCurrent,vi_RecordsEndCurrent,h_CONST_INT[e_d_CONST_INT_numRecordsPerThread]);
-			HOST_GENERIC_RECORD_FRAME(
-				h_CONST_INT[e_d_CONST_INT_numBlocks],
-				h_CONST_INT[e_d_CONST_INT_numThreadsPerBlock],
-				d_IO,
-				d_IO_INT,
-				vi_RecordsStartCurrent,
-				vi_RecordsEndCurrent);
-			printf("Completed");
-		}
-		printf("\nDay o day o daylight come and me wanna go %d threads",h_CONST_INT[e_d_CONST_INT_numThreads]);
+		// Run kernel
+		vi_RecordsStartCurrent = vi_RecordsEndCurrent;
+		int vi_RecordsEndCurrent_TEMP =  vi_RecordsStartCurrent + h_CONST_INT[e_d_CONST_INT_numRecordsPerUpdate];
+		if (vi_RecordsEndCurrent_TEMP>vi_RecordsEndFinal) vi_RecordsEndCurrent = vi_RecordsEndFinal;
+		else vi_RecordsEndCurrent = vi_RecordsStartCurrent + h_CONST_INT[e_d_CONST_INT_numRecordsPerUpdate];
+		// vi_RecordsStartCurrent = 0;
+		// vi_RecordsEndCurrent = vi_RecordsEndFinal;
+		printf("\nStarting Records %d-%d of %d... ",vi_RecordsStartCurrent,vi_RecordsEndCurrent,h_CONST_INT[e_d_CONST_INT_numRecordsPerThread]);
+		GENERIC_RECORD_FRAME(
+			h_CONST_INT[e_d_CONST_INT_numBlocks],
+			h_CONST_INT[e_d_CONST_INT_numThreadsPerBlock],
+			d_IO,
+			d_IO_INT,
+			vi_RecordsStartCurrent,
+			vi_RecordsEndCurrent);
+		// GENERIC_PIECEWISE_KERNEL_MULTI<<<h_CONST_INT[e_d_CONST_INT_numBlocks],h_CONST_INT[e_d_CONST_INT_numThreadsPerBlock]>>>(
+			// d_IO, 
+			// d_IO_INT, 
+			// vi_RecordsStartCurrent,
+			// vi_RecordsEndCurrent);
+		printf("Completed");
 	}
-		
-
+  printf("\nDay o day o daylight come and me wanna go %d threads",h_CONST_INT[e_d_CONST_INT_numThreads]);
+	// Move results of output to Host Memory from Device Memory
+  cudaMemcpy(h_IO, d_IO, numBytesIO, cudaMemcpyDeviceToHost);
+  cudaMemcpy(h_IO_INT, d_IO_INT, numBytesIO_INT, cudaMemcpyDeviceToHost);
+  
+  cudaFree(d_IO);
+  cudaFree(d_IO_INT);
+  
 	return;
 }

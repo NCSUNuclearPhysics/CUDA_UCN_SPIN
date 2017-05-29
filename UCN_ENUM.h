@@ -286,16 +286,6 @@ enum e_d_IO {
   e_d_IO_ERR_SPINNOR_1, 
   e_d_IO_ERR_SPINNOR_2, 
   e_d_IO_ERR_SPINNOR_3, 	
-  e_d_IO_CORRECT_X, 
-  e_d_IO_CORRECT_Y, 
-  e_d_IO_CORRECT_Z, 
-  e_d_IO_CORRECT_VX, 
-  e_d_IO_CORRECT_VY, 
-  e_d_IO_CORRECT_VZ, 
-  e_d_IO_CORRECT_SPINNOR_0, 
-  e_d_IO_CORRECT_SPINNOR_1, 
-  e_d_IO_CORRECT_SPINNOR_2, 
-  e_d_IO_CORRECT_SPINNOR_3, 	
   e_d_IO_BX, 
   e_d_IO_BY, 
   e_d_IO_BZ, 
@@ -310,12 +300,9 @@ enum e_d_IO {
   e_d_IO_dB_ZDZ, 
 	e_d_IO_POLARIZATION, 
 	e_d_IO_HNEXT, 
-// 	e_d_IO_SX, 
-//   e_d_IO_SY, 
-//   e_d_IO_SZ, 
-// 	e_d_IO_SX_CORRECT, 
-//   e_d_IO_SY_CORRECT, 
-//   e_d_IO_SZ_CORRECT, 
+	e_d_IO_SX, 
+  e_d_IO_SY, 
+  e_d_IO_SZ, 
   // e_d_IO_EPSILON_MAX_XV,// .([^=]*)=([^=]*)\; \t([^=]*) = ([^=]*)\; \t\2 = \1\;
   // e_d_IO_ERROR_XV, 
   // e_d_IO_HNEXT_XV_PGROW_BOUNDED, 
@@ -335,7 +322,6 @@ enum e_d_IO {
 	// e_d_IO_EXTRA_1, 
 	// e_d_IO_EXTRA_2, 
 	// e_d_IO_EXTRA_3, 
-	e_d_IO_HDID,
 	e_d_IO_LAST
 };
 enum e_d_IO_INT {
@@ -392,7 +378,6 @@ enum e_d_CONST {
 	e_d_CONST_def_HBAR, 
 	e_d_CONST_def_pos_BASE, 
 	e_d_CONST_def_vel_BASE, 
-	e_d_CONST_def_NEUTRON_G_FACTOR, 
 	e_d_CONST_def_CORRECTIVE_FACTOR_SPIN, 
 	e_d_CONST_def_START_SPIN_X, 
 	e_d_CONST_def_START_SPIN_Y, 
@@ -416,7 +401,6 @@ enum e_d_CONST {
 	e_d_CONST_DEFAULT_Y, 
 	e_d_CONST_DEFAULT_Z, 
 	e_d_CONST_RF_BFIELD_MAG, 
-	e_d_CONST_NEUTRON_GYROMAG_MOMENT,
 	e_d_CONST_LAST
 };
 enum e_d_CONST_INT {
@@ -461,8 +445,6 @@ enum e_d_CONST_INT {
 	e_d_CONST_INT_numRecordsPerReverse, 
 	e_d_CONST_INT_numRecordsPerReverse_SPIN, 
 	e_d_CONST_INT_FLAG_CLASSICAL_SPIN, 
-	e_d_CONST_INT_FLAG_REVERSE_CHECK, 
-	e_d_CONST_INT_FLAG_HOST_COMPILE, 
 	e_d_CONST_INT_LAST
 };
 enum e_d_IO_DERIVED { 
