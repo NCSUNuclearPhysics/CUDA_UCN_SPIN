@@ -13,7 +13,7 @@
 
 #include <cuda.h> 
 #include <cuda_runtime.h>
-#include "UCN_CUDA_KERNEL.cuh"
+#include "UCN_CUDA_ALL_KERNEL.cuh"
 #include "UCN_CUDA_WRAPPER.h"
 
 int GENERIC_WRAPPER_MULTI(
