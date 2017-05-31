@@ -28,19 +28,19 @@
 //   double spin[], double BField[], double dField_1D_FLAT[]);
 // 
 // int MAIN_CUDA_rkqs_6(int param_d_CONST_INT[e_d_CONST_INT_LAST], double param_d_CONST[e_d_CONST_LAST], double y[], double dydt[], 
-// 	double *x, double htry, double eps, double *hdid, double *hnext, 
-// 	double yscal[], double spin[], double BField[], double dField_1D_FLAT[], double yerr[]);
+//   double *x, double htry, double eps, double *hdid, double *hnext, 
+//   double yscal[], double spin[], double BField[], double dField_1D_FLAT[], double yerr[]);
 // 
 // int MAIN_CUDA_odeint_6(int param_d_CONST_INT[e_d_CONST_INT_LAST], double param_d_CONST[e_d_CONST_LAST], double ystart[], double spin[], 
 //   double x1, double x2, double eps, double epsilon[], double h1, double hmin, 
 //   double BField[], double dField_1D_FLAT[]);
 
 int GENERIC_WRAPPER_MULTI(
-	const double *h_CONST,
-	const int *h_CONST_INT,
+  const double *h_CONST,
+  const int *h_CONST_INT,
   double *h_IO,
   int *h_IO_INT);
 // void GENERIC_WRAPPER_BFIELD(
-	// const double *h_CONST,
-	// const int *h_CONST_INT,
+  // const double *h_CONST,
+  // const int *h_CONST_INT,
   // double *h_IO);
