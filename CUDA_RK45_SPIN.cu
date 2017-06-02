@@ -200,262 +200,6 @@ __device__ /*__host__*/ double CUDA_polcalc_XVS(
   polarization = xhat1*bxhat + yhat1*byhat + zhat1*bzhat;
   return(polarization);
 }
-__device__ /*__host__*/ int CUDA_Mag_ROHM_HOLLEY_XVS( double xvs[], double BField[] )
-{
-  double xi, yi, zi, l, zoff, zoff2, zcent, a0, rcoil, lcoil, rsol, bmax, b0, bpr, bpp, bppp, zrf, lsol,sinth0,costh0, bc0, sinthc0, costhc0, bcc0;
-  zoff = 0.295;
-  zoff2 = 1.595;
-  rsol = .08;
-  b0   = .975372;/* .93562; */
-
-  a0 = .21;
-
-  zcent = 0.1641;
-  bmax = 7.0327;
-  rcoil = .144;
-  lcoil = .097;
-
-  bpr  = 0.10749; 
-  bpp = -0.102;  /*T/m^2*/
-  bppp = 3.45;  /* T/m^3 */
-
-  zrf = 1.14;
-  lsol = (zoff2-zoff)/2.;
-  sinth0 = rsol/sqrt(rsol*rsol+lsol*lsol);
-  costh0 = lsol*sinth0/rsol;
-  bc0 = b0/costh0;
- 
-  sinthc0 = rcoil/sqrt(rcoil*rcoil + lcoil*lcoil);
-  costhc0 = lcoil*sinthc0/rcoil;
-  bcc0  = bmax/costhc0;
-  double rho;
-
-
-  double zd1, anm,anmsq,rhnm1;
-  double costh1,sinth1,costh2,sinth2;
-  double sinth1sq,sinth2sq;
-  double rhnm2;
-  int result;
-
-  double sinthc1,costhc1,sinthc2,costhc2;
-  double sinthc1sq,sinthc2sq;
-  double rhnmc;
-
-  /*
-  double sinthn1,costhn1,sinthn2,costhn2;
-  double sinthn1sq,sinthn2sq;
-  double rhnmn;
-  */
-
-  /* compute common expressions 
-   (this is for legibility as well as optimization) */
-  sinth1 = rsol/sqrt(rsol*rsol+(zoff2-xvs[2])*(zoff2-xvs[2]));
-  costh1 = (zoff2 - xvs[2])*sinth1/rsol;
-
-  sinth2 = rsol/sqrt(rsol*rsol+(xvs[2]-zoff)*(xvs[2]-zoff));
-  costh2 = (xvs[2] - zoff)*sinth2/rsol;
-
-  sinth1sq = sinth1*sinth1;
-  sinth2sq = sinth2*sinth2;
-
-  rho = sqrt(xvs[0]*xvs[0]+xvs[1]*xvs[1]);
-  rhnm2 = rho/rsol;
-  rhnmc = rho/rcoil;
-  /*  rhnmn = rho/rnew; */
-
-  sinthc1 = rcoil/sqrt(rcoil*rcoil+(zcent+lcoil-xvs[2])*(zcent+lcoil-xvs[2]));
-  costhc1 = (zcent+lcoil - xvs[2])*sinthc1/rcoil;
-
-  sinthc2 = rcoil/sqrt(rcoil*rcoil + (xvs[2] - (zcent - lcoil))*(xvs[2] - (zcent - lcoil)));
-  costhc2 = (xvs[2]-(zcent - lcoil))*sinthc2/rcoil;
-
-  sinthc1sq = sinthc1*sinthc1;
-  sinthc2sq = sinthc2*sinthc2;
-  /*
-  sinthn1 = rnew/sqrt(rnew*rnew+(zcnew+lnew-xvs[2])*(zcnew+lnew-xvs[2]));
-  costhn1 = (zcnew+lnew - xvs[2])*sinthn1/rnew;
-
-  sinthn2 = rnew/sqrt(rnew*rnew + (xvs[2] - (zcnew - lnew))*(xvs[2] - (zcnew - lnew)));
-  costhn2 = (xvs[2]-(zcnew - lnew))*sinthn2/rnew;
-
-  sinthn1sq = sinthn1*sinthn1;
-  sinthn2sq = sinthn2*sinthn2;
-  */
-  zd1 = sqrt(a0*a0+(xvs[2]-zcent)*(xvs[2]-zcent));
-  anm = a0/zd1;
-  anmsq = anm*anm;
-  rhnm1 = rho/zd1;
-  result = 0;
-  BField[0] = bcc0*xvs[0]*(sinthc1*sinthc1sq-sinthc2*sinthc2sq)/(4.*rcoil)
-    /*    + bcn0*xvs[0]*(sinthn1*sinthn1sq-sinthn2*sinthn2sq)/(4.*rnew)  */
-    + bc0*xvs[0]*(sinth1*sinth1sq-sinth2*sinth2sq)/(4.*rsol)
-    - xvs[0]*bpr/2. - xvs[0]*(xvs[2]-zrf)*bpp/2. + xvs[0]*(rho*rho/16. -(xvs[2]-zrf)*(xvs[2]-zrf)/4.)*bppp;
-  BField[1] =  bcc0*xvs[1]*(sinthc1*sinthc1sq-sinthc2*sinthc2sq)/(4.*rcoil)
-    /*   + bcn0*xvs[1]*(sinthn1*sinthn1sq-sinthn2*sinthn2sq)/(4.*rnew) */
-    + bc0*xvs[1]*(sinth1*sinth1sq-sinth2*sinth2sq)/(4.*rsol)
-    - xvs[1]*bpr/2. - xvs[1]*(xvs[2]-zrf)*bpp/2. + xvs[1]*(rho*rho/16. -(xvs[2]-zrf)*(xvs[2]-zrf)/4.)*bppp;
-  BField[2] =  bcc0*((costhc1+costhc2)/2.+
-         .375*rhnmc*rhnmc*(sinthc1sq*sinthc1sq*costhc1+sinthc2sq*sinthc2sq*costhc2))
-    /*    + bcn0*((costhn1+costhn2)/2.+
-    .375*rhnmn*rhnmn*(sinthn1sq*sinthn1sq*costhn1+sinthn2sq*sinthn2sq*costhn2)) */
-    + bc0*((costh1+costh2)/2.
-     +.375*rhnm2*rhnm2*(sinth1sq*sinth1sq*costh1+sinth2sq*sinth2sq*costh2))
-    + bpr*(xvs[2]-zrf) + ((xvs[2]-zrf)*(xvs[2]-zrf)/2. - rho*rho/4.)*bpp + ((xvs[2]-zrf)*((xvs[2]-zrf)*(xvs[2]-zrf)/6.-rho*rho/4.))*bppp;
- 
- return( result );
-}
-
-
-__device__ /*__host__*/ int CUDA_dB_ROHM_HOLLEY_XVS( double xvs[], double BField[], double dField_1D_FLAT[])
-{
-  double xi, yi, zi, l, zoff, zoff2, zcent, a0, rcoil, lcoil, rsol, bmax, b0, bpr, bpp, bppp, zrf, lsol,sinth0,costh0, bc0, sinthc0, costhc0, bcc0;
-  zoff = 0.295;
-  zoff2 = 1.595;
-  rsol = .08;
-  b0   = .975372;/* .93562; */
-
-  a0 = .21;
-
-  zcent = 0.1641;
-  bmax = 7.0327;
-  rcoil = .144;
-  lcoil = .097;
-
-  bpr  = 0.10749; 
-  bpp = -0.102;  /*T/m^2*/
-  bppp = 3.45;  /* T/m^3 */
-
-  zrf = 1.14;
-  lsol = (zoff2-zoff)/2.;
-  sinth0 = rsol/sqrt(rsol*rsol+lsol*lsol);
-  costh0 = lsol*sinth0/rsol;
-  bc0 = b0/costh0;
- 
-  sinthc0 = rcoil/sqrt(rcoil*rcoil + lcoil*lcoil);
-  costhc0 = lcoil*sinthc0/rcoil;
-  bcc0  = bmax/costhc0;  
-  double rho;   
-  double zd1sq,anmsq,rhnm1;
-  double costh1,sinth1,costh2,sinth2;
-  double sinth1sq,sinth2sq;
-  double  rhnm2;
-
-  double costhc1,sinthc1,costhc2,sinthc2;
-  double sinthc1sq,sinthc2sq;
-  double  rhnmc2;
-  double BZ;
-  double Bslope, Bdelta, Bsigma;
-  
-  int result;
-
-
-  /*  !!!!!!! NOT UP TO DATE   !!!!!   */
-
-
-  rho = sqrt(xvs[0]*xvs[0]+xvs[1]*xvs[1]);
-
-  sinth1 = rsol/sqrt(rsol*rsol+(zoff2-xvs[2])*(zoff2-xvs[2]));
-  costh1 = (zoff2 - xvs[2])*sinth1/rsol;
-  sinth2 = rsol/sqrt(rsol*rsol+(xvs[2]-(zoff2-2.*lsol))*(xvs[2]-(zoff2-2.*lsol)));
-  costh2 = (xvs[2]-(zoff2-2.*lsol))*sinth2/rsol;
-  sinth1sq = sinth1*sinth1;
-  sinth2sq = sinth2*sinth2;
- 
-  rhnm2 = rho/rsol;
-
-  sinthc1 = rcoil/sqrt(rcoil*rcoil+(zcent+lcoil-xvs[2])*(zcent+lcoil-xvs[2]));
-  costhc1 = (zcent + lcoil - xvs[2])*sinthc1/rcoil;
-  sinthc2 = rcoil/sqrt(rcoil*rcoil+(xvs[2]-(zcent-lcoil))*(xvs[2]-(zcent-lcoil)));
-  costhc2 = (xvs[2]-(zcent-lcoil))*sinthc2/rcoil;
-  sinthc1sq = sinthc1*sinthc1;
-  sinthc2sq = sinthc2*sinthc2;
-  
-  rhnmc2 = rho/rcoil;  
-
-  zd1sq = (a0*a0+(xvs[2]-zcent)*(xvs[2]-zcent));   /* ! */
-  rhnm1 = rho/sqrt(zd1sq);          /* ! */
-  anmsq = a0*a0/zd1sq;             /* ! */
-    /*  anmsq = anm*anm;*/
-  
-  BZ = bmax*anmsq*sqrt(anmsq);        /* ! */
-  result = 0; /* if direct1,2 <0 or >3, we are at sea. */  
-  /*   */
-  Bslope = (xvs[2]-zcent)*BZ/zd1sq;      /* ! */
-  Bdelta =  bc0*(sinth1*sinth1sq-sinth2*sinth2sq)/(4.*rsol) +
-          bcc0*(sinthc1*sinthc1sq-sinthc2*sinthc2sq)/(4.*rcoil);
-  /*  fixed sinth4 bug here */
-  Bsigma = bc0*(sinth1sq*sinth1sq*costh1+sinth2sq*sinth2sq*costh2) +
-    bcc0*(sinthc1sq*sinthc1sq*costhc1+sinthc2sq*sinthc2sq*costhc2);
-
-  /* */
-  dField_1D_FLAT[0] = Bdelta - bpr/2. - (xvs[2]-zrf)*bpp/2.+(3.*xvs[0]*xvs[0]+xvs[1]*xvs[1])*bppp/16.;
-  dField_1D_FLAT[1] = xvs[0]*xvs[1]*bppp/8.;
-  dField_1D_FLAT[2] =  .75 * xvs[0] * Bsigma - xvs[0]*(bpp+(xvs[2]-zrf)*bppp)/2.;
-  dField_1D_FLAT[3] =  xvs[0]*xvs[1]*bppp/8.;
-  dField_1D_FLAT[4] =  Bdelta - bpr/2. - (xvs[2]-zrf)*bpp/2.+(xvs[0]*xvs[0]+3.*xvs[1]*xvs[1])*bppp/16.;
-  dField_1D_FLAT[5] =  .75 * xvs[1] * Bsigma - xvs[1]*(bpp+(xvs[2]-zrf)*bppp)/2.;
-  dField_1D_FLAT[6] = - xvs[0]*(bpp+(xvs[2]-zrf)*bppp)/2.;
-  dField_1D_FLAT[7] = - xvs[1]*(bpp+(xvs[2]-zrf)*bppp)/2.;
-  dField_1D_FLAT[8] =  .5*(bc0/rsol)*( -sinth1*sinth1sq + sinth2*sinth2sq)+ 0.375*(bc0/rsol)
-    *(rhnm2*rhnm2)*(sinth1sq*sinth1*(4.*sinth1sq-5.*sinth1sq*sinth1sq))
-    - 0.375*(bc0/rsol)*(rhnm2*rhnm2)*(sinth2sq*sinth2*(4.*sinth2sq-5.*sinth2sq*sinth2sq))
-    + .5*(bcc0/rcoil)*( -sinthc1*sinthc1sq + sinthc2*sinthc2sq)+ 0.375*(bcc0/rcoil)
-    *(rhnmc2*rhnmc2)*(sinthc1sq*sinthc1*(4.*sinthc1sq-5.*sinthc1sq*sinthc1sq))
-    - 0.375*(bcc0/rcoil)*(rhnmc2*rhnmc2)*(sinthc2sq*sinthc2*(4.*sinthc2sq-5.*sinthc2sq*sinthc2sq))
-    + bpr + (xvs[2]-zrf)*bpp + (2.*(xvs[2]-zrf)*(xvs[2]-zrf)- (xvs[0]*xvs[0]+xvs[1]*xvs[1]))*bppp/4.;
-  /* result = dField[comp][part]; */
-  /* return(result); */
-  return 0;
-}
-__device__ /*__host__*/ int CUDA_Mag_CONSTANT_XVS( double xvs[], double BField[])
-{
-  BField[0] = 0.0;
-  BField[1] = 0.0;
-  BField[2] = 1.0;
-  return 0;
-}
-__device__ /*__host__*/ int CUDA_dB_CONSTANT_XVS( double xvs[], double BField[], double dField_1D_FLAT[])
-{
-  dField_1D_FLAT[0] = 0.0;
-  dField_1D_FLAT[1] = 0.0;
-  dField_1D_FLAT[2] = 0.0;
-  dField_1D_FLAT[3] = 0.0;
-  dField_1D_FLAT[4] = 0.0;
-  dField_1D_FLAT[5] = 0.0;
-  dField_1D_FLAT[6] = 0.0;
-  dField_1D_FLAT[7] = 0.0;
-  dField_1D_FLAT[8] = 0.0;
-  return 0;
-}
-__device__ /*__host__*/ int CUDA_Mag_XVS( double xvs[], double BField[])
-{
-  if (d_CONST_INT[e_d_CONST_INT_FLAG_MAGNETIC]==1) return CUDA_Mag_ROHM_HOLLEY_XVS( xvs, BField );
-  else if (d_CONST_INT[e_d_CONST_INT_FLAG_MAGNETIC]==2) return CUDA_Mag_CONSTANT_XVS( xvs, BField );
-  else return -1;
-}
-__device__ /*__host__*/ int CUDA_dB_XVS( double xvs[], double BField[], double dField_1D_FLAT[])
-{
-  if (d_CONST_INT[e_d_CONST_INT_FLAG_MAGNETIC]==1) return CUDA_dB_ROHM_HOLLEY_XVS( xvs, BField, dField_1D_FLAT);
-  else if (d_CONST_INT[e_d_CONST_INT_FLAG_MAGNETIC]==2) return CUDA_dB_CONSTANT_XVS( xvs, BField, dField_1D_FLAT);
-  else return -1;
-}
-__device__ /*__host__*/ int CUDA_RF_BFIELD( double t, double xvs[],  double extra_brf[])
-{
-    double rfstr = d_CONST[e_d_CONST_RF_BFIELD_MAG];
-    double  omega,btoomega,zrf,zdist,zdelta;
-    btoomega = d_CONST[e_d_CONST_def_MOMENT]/d_CONST[e_d_CONST_def_HBAR];  // coeff. for psi-dot 
-    omega    = 2.0*d_CONST[e_d_CONST_def_MOMENT]*(1.0)/d_CONST[e_d_CONST_def_HBAR]; // reson. frequ. for 1.0 T field 
-    zrf      = 1.14; // chosen to match crossing poconst int 
-    // some comment explaining this. v 
-    zdist = xvs[8];
-    zdelta = (zdist - zrf)*(zdist -zrf)/(.05*.05);
-    extra_brf[0] = rfstr*cos(omega*(t-0.0)) * (1.0/((1.0+zdelta)*(1.0+zdelta))); 
-    extra_brf[1] = 0.;
-      // exp(-(zdist-zrf)*(zdist-zrf)/(.05*.05)); 
-    extra_brf[2] = 0.;
-    
-    return 0;
-}
 __device__ /*__host__*/ int CUDA_derivs_XVS( 
   double t,
   double xvs[],
@@ -583,19 +327,19 @@ __device__ /*__host__*/ int CUDA_rkck_XVS(
   const double b61=(1631.0/55296.0), b62=(175.0/512.0), b63=(575.0/13824.0), b64=(44275.0/110592.0), b65=(253.0/4096.0); 
   const double c1=(37.0/378.0), c3=(250.0/621.0), c4=(125.0/594.0), c6=(512.0/1771.0);
   const double dc5=( -277.0/14336.0), dc1=(c1-2825.0/27648.0),  dc3=(c3-18575.0/48384.0), dc4=(c4-13525.0/55296.0), dc6=(c6-0.25);
-  double ak2[10], ak3[10], ak4[10], ak5[10], ak6[10], xvstemp[10];
-  for (i = 0; i<10; i++)   /* First step */ xvstemp[i]=xvs[i]+b21*h*dxvsdt[i];
+  double ak2[4], ak3[4], ak4[4], ak5[4], ak6[4], xvstemp[4];
+  for (i = 0; i<4; i++)   /* First step */ xvstemp[i]=xvs[i]+b21*h*dxvsdt[i];
   CUDA_derivs_XVS(t, xvs, ak2, BField, dField_1D_FLAT);    /* Second step */
-  for (i = 0; i<10; i++) xvstemp[i]=xvs[i]+h*(b31*dxvsdt[i]+b32*ak2[i]);
+  for (i = 0; i<4; i++) xvstemp[i]=xvs[i]+h*(b31*dxvsdt[i]+b32*ak2[i]);
   CUDA_derivs_XVS(t, xvs, ak3, BField, dField_1D_FLAT);    /* Third step */
-  for (i = 0; i<10; i++) xvstemp[i]=xvs[i]+h*(b41*dxvsdt[i]+b42*ak2[i]+b43*ak3[i]);
+  for (i = 0; i<4; i++) xvstemp[i]=xvs[i]+h*(b41*dxvsdt[i]+b42*ak2[i]+b43*ak3[i]);
   CUDA_derivs_XVS(t, xvs, ak4, BField, dField_1D_FLAT);    /* Fourth step */
-  for (i = 0; i<10; i++) xvstemp[i]=xvs[i]+h*(b51*dxvsdt[i]+b52*ak2[i]+b53*ak3[i]+b54*ak4[i]);
+  for (i = 0; i<4; i++) xvstemp[i]=xvs[i]+h*(b51*dxvsdt[i]+b52*ak2[i]+b53*ak3[i]+b54*ak4[i]);
   CUDA_derivs_XVS(t, xvstemp, ak5, BField, dField_1D_FLAT);    /* Fifth step */
-  for (i = 0; i<10; i++) xvstemp[i]=xvs[i]+h*(b61*dxvsdt[i]+b62*ak2[i]+b63*ak3[i]+b64*ak4[i]+b65*ak5[i]);
+  for (i = 0; i<4; i++) xvstemp[i]=xvs[i]+h*(b61*dxvsdt[i]+b62*ak2[i]+b63*ak3[i]+b64*ak4[i]+b65*ak5[i]);
   CUDA_derivs_XVS(t, xvs, ak6, BField, dField_1D_FLAT);    /* Sixth step */
-  for (i = 0; i<10; i++)  xvsout[i]=xvs[i]+h*(c1*dxvsdt[i]+c3*ak3[i]+c4*ak4[i]+c6*ak6[i]); /* Accumulate increments with proper weights */
-  for (i = 0; i<10; i++) xvserr[i]=h*(dc1*dxvsdt[i]+dc3*ak3[i]+dc4*ak4[i]+dc5*ak5[i]+dc6*ak6[i]);
+  for (i = 0; i<4; i++)  xvsout[i]=xvs[i]+h*(c1*dxvsdt[i]+c3*ak3[i]+c4*ak4[i]+c6*ak6[i]); /* Accumulate increments with proper weights */
+  for (i = 0; i<4; i++) xvserr[i]=h*(dc1*dxvsdt[i]+dc3*ak3[i]+dc4*ak4[i]+dc5*ak5[i]+dc6*ak6[i]);
   return 0;
 }
 __device__ /*__host__*/ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
@@ -619,8 +363,8 @@ __device__ /*__host__*/ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
   double hnext_xv;
   double hnext_s;
   double hcurrent = htry;
-  double xvs_temp[10];
-  double epsilon_temp[10];
+  double xvs_temp[4];
+  double epsilon_temp[4];
   double error, error_xv, error_s;
   int return_value = -1;
   int return_value_xv = -1;
@@ -642,7 +386,7 @@ __device__ /*__host__*/ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
     dField_1D_FLAT);
   double epsilon_max_xv = 0.0;
   double epsilon_max_s = 0.0;
-  for (i = 0; i<10; i++)
+  for (i = 0; i<4; i++)
   {
     if (i<6)
     {
@@ -703,7 +447,7 @@ __device__ /*__host__*/ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
   if ((*t + hcurrent) == *t) return_value = e_RKQS_ERROR_STEPSIZE_UNDERFLOW;
   else if (return_value_xv==0 && return_value_s==0)
   {
-    for (i=0; i<10; i++)
+    for (i=0; i<4; i++)
     {
       xvs[i] = xvs_temp[i];
       epsilon[i] = epsilon_temp[i];
@@ -862,10 +606,10 @@ __global__ void GENERIC_PIECEWISE_KERNEL_MULTI_XVS_RKQS_LOOP(
   int i, j, k, vi_RECORD, vi_RKQS_STEP, return_value_RKQS, l_rkqs_TRIED;
   int l_odeint_steps, vi_BREAK_FLAG, vi_REVERSE_FLAG, vi_INDEX;
   double l_time_CURRENT;
-  double l_xvs[10];
-  double l_dxvsdt[10];
-  double l_xvs_scal[10];
-  double l_epsilon[10];
+  double l_xvs[4];
+  double l_dxvsdt[4];
+  double l_xvs_scal[4];
+  double l_epsilon[4];
   double l_BField[3];
   double l_dField_1D_FLAT[9];
   double l_pol;
@@ -878,7 +622,7 @@ __global__ void GENERIC_PIECEWISE_KERNEL_MULTI_XVS_RKQS_LOOP(
   return_value_RKQS = d_IO[vi_IO_INT_OFFSET_START + e_d_IO_INT_ERROR];  
   l_rkqs_TRIED = 0;
   l_time_CURRENT = d_IO[vi_IO_DOUBLE_OFFSET_START + e_d_IO_T]; 
-  for (i = 0 ; i<10; i++)
+  for (i = 0 ; i<4; i++)
   {
     l_xvs[i] = d_IO[vi_IO_DOUBLE_OFFSET_START + e_d_IO_X + i];
     l_dxvsdt[i] = d_IO[vi_IO_DOUBLE_OFFSET_START + e_d_IO_RED_VX + i];
@@ -1014,7 +758,7 @@ __global__ void GENERIC_PIECEWISE_KERNEL_MULTI_XVS_RKQS_LOOP(
   // d_IO[vi_IO_INT_OFFSET_END + e_d_IO_INT_RKQS_STEPS] = l_rkqs_TRIED;
   
   d_IO[vi_IO_DOUBLE_OFFSET_END + e_d_IO_T] = l_time_CURRENT; 
-  for (i = 0 ; i<10; i++)
+  for (i = 0 ; i<4; i++)
   {
     d_IO[vi_IO_DOUBLE_OFFSET_END + e_d_IO_X + i] = l_xvs[i];
     d_IO[vi_IO_DOUBLE_OFFSET_END + e_d_IO_RED_VX + i] =   l_dxvsdt[i];
