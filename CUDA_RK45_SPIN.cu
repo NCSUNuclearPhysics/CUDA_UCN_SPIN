@@ -116,65 +116,11 @@ __device__ /*__host__*/ double CUDA_phi( double x, double y)
     solution = ((d_CONST[e_d_CONST_def_PI]/2.0));
   return solution;
 }
-__device__ /*__host__*/ double CUDA_SPIN_X( double spinor_0, double spinor_1, double spinor_2, double spinor_3 )
-{
-  double xhat1;
-  if (d_CONST[e_d_CONST_INT_FLAG_CLASSICAL_SPIN]==0) xhat1 = spinor_1;
-  else if (d_CONST[e_d_CONST_INT_FLAG_CLASSICAL_SPIN]==1)
-  {
-    double snorm = (spinor_0*spinor_0) +   (spinor_1*spinor_1) + (spinor_2*spinor_2) + (spinor_3*spinor_3);
-    xhat1 =( 2.*((spinor_0*spinor_2) + (spinor_1*spinor_3)))/snorm;
-  }
-  return xhat1;
-}
-__device__ /*__host__*/ double CUDA_SPIN_Y( double spinor_0, double spinor_1, double spinor_2, double spinor_3 )
-{
-  double yhat1;
-  if (d_CONST[e_d_CONST_INT_FLAG_CLASSICAL_SPIN]==0) yhat1 = spinor_2;
-  else if (d_CONST[e_d_CONST_INT_FLAG_CLASSICAL_SPIN]==1)\
-  {
-    double snorm = (spinor_0*spinor_0) + (spinor_1*spinor_1) +  
-            (spinor_2*spinor_2) + (spinor_3*spinor_3);
-    yhat1 = ( 2.*((spinor_0*spinor_3) - (spinor_1*spinor_2)))/snorm;
-  }
-  return yhat1;
-}
-__device__ /*__host__*/ double CUDA_SPIN_Z( double spinor_0, double spinor_1, double spinor_2, double spinor_3 )
-{
-  double zhat1;
-  if (d_CONST[e_d_CONST_INT_FLAG_CLASSICAL_SPIN]==0) zhat1 = spinor_3;
-  else if (d_CONST[e_d_CONST_INT_FLAG_CLASSICAL_SPIN]==1)
-  {
-    double snorm = (spinor_0*spinor_0) + (spinor_1*spinor_1) +  
-          (spinor_2*spinor_2) + (spinor_3*spinor_3);
-    zhat1 = ((spinor_0*spinor_0) + (spinor_1*spinor_1) - 
-     (spinor_2*spinor_2) - (spinor_3*spinor_3))/snorm;
-  }
-  return zhat1;
-}
-__device__ /*__host__*/ int CUDA_SPIN_XVS_XYZ( 
-  double spin[],
-  double xvs[])
-{  
-  spin[0] = CUDA_SPIN_X(xvs[6], xvs[7], xvs[8], xvs[9]);
-  spin[1] = CUDA_SPIN_Y(xvs[6], xvs[7], xvs[8], xvs[9]);
-  spin[2] = CUDA_SPIN_Z(xvs[6], xvs[7], xvs[8], xvs[9]);
-}
-__device__ /*__host__*/ double CUDA_SPIN_XVS_SINGLE( 
-  double xvs[],
-  int vi_X0_Y1_Z2)
-{
-  double vd_RETURN_VALUE;
-  if (vi_X0_Y1_Z2==0) vd_RETURN_VALUE = CUDA_SPIN_X(xvs[6], xvs[7], xvs[8], xvs[9]);
-  if (vi_X0_Y1_Z2==1) vd_RETURN_VALUE = CUDA_SPIN_Y(xvs[6], xvs[7], xvs[8], xvs[9]);
-  if (vi_X0_Y1_Z2==2) vd_RETURN_VALUE = CUDA_SPIN_Z(xvs[6], xvs[7], xvs[8], xvs[9]);
-  return vd_RETURN_VALUE;
-}
 __device__ /*__host__*/ double CUDA_polcalc_XVS( 
   double bb1x, 
   double bb1y, 
   double bb1z, 
-  double xvs[])
+  double spinor[])
 {
   double xhat1,yhat1,zhat1,snorm;
   /* const double xhat2,yhat2,zhat2; */
@@ -190,76 +136,22 @@ __device__ /*__host__*/ double CUDA_polcalc_XVS(
   xhat1 = 0.;
   yhat1 = 0.;
   zhat1 = 0.;
-  // CUDA_SPIN_XVS_XYZ( spin, xvs );
-  snorm = (xvs[6]*xvs[6]) + (xvs[7]*xvs[7]) +  
-          (xvs[8]*xvs[8]) + (xvs[9]*xvs[9]);
-  xhat1 =( 2.*((xvs[6]*xvs[8]) + (xvs[7]*xvs[9])))/snorm;
-  yhat1 = ( 2.*((xvs[6]*xvs[9]) - (xvs[7]*xvs[8])))/snorm;
-  zhat1 = ((xvs[6]*xvs[6]) + (xvs[7]*xvs[7]) - 
-     (xvs[8]*xvs[8]) - (xvs[9]*xvs[9]))/snorm;
+  // CUDA_SPIN_XVS_XYZ( spin, spinor );
+  snorm = (spinor[0]*spinor[0]) + (spinor[1]*spinor[1]) +  
+          (spinor[2]*spinor[2]) + (spinor[3]*spinor[3]);
+  xhat1 =( 2.*((spinor[0]*spinor[2]) + (spinor[1]*spinor[3])))/snorm;
+  yhat1 = ( 2.*((spinor[0]*spinor[3]) - (spinor[1]*spinor[2])))/snorm;
+  zhat1 = ((spinor[0]*spinor[0]) + (spinor[1]*spinor[1]) - 
+     (spinor[2]*spinor[2]) - (spinor[3]*spinor[3]))/snorm;
   polarization = xhat1*bxhat + yhat1*byhat + zhat1*bzhat;
   return(polarization);
 }
 __device__ /*__host__*/ int CUDA_derivs_XVS( 
   double t,
-  double xvs[],
-  double dxvsdt[],
-  double BField[],
-  double dField_1D_FLAT[])
+  double spinor[],
+  double dspinordt[],
+  double BField[])
 {  
-  // double x,y,z;  /* Cartesian coordinates */
-  // double rad, th;  /* Polar coordinates */
-  // double B;   /* Magnitude of B */
-  // int Bgood;
-  // double spin[3];
-  // CUDA_SPIN_XVS_XYZ(spin, xvs);
-  // x=xvs[0];
-  // y=xvs[1];
-  // z=xvs[2];
-  // rad=CUDA_r(x,y,z);
-  // th=CUDA_theta(x,y,z);
-  // dxvsdt[0]=xvs[3]; /* derivative of x = v in x direction */
-  // dxvsdt[1]=xvs[4]; /* ditto for y */
-  // dxvsdt[2]=xvs[5]; /* ditto for z */
-  // dxvsdt[3]=0; /* initializing acceleration in x direction */
-  // dxvsdt[4]=0; /* ditto for y */
-  // dxvsdt[5]=0; /* ditto for z */
-  // Bgood = CUDA_Mag_XVS(xvs, BField);
-  // B = sqrt( BField[0]*BField[0]+BField[1]*BField[1]+BField[2]*BField[2]);
-  // Bgood = CUDA_dB_XVS(xvs, BField, dField_1D_FLAT);
-  // if (d_CONST_INT[e_d_CONST_INT_def_PERFECT_POLARIZATION] && 
-    // isfinite(BField[0]) && 
-    // isfinite(BField[1]) && 
-    // isfinite(BField[2]) && 
-    // (B>0 && isfinite(B)))
-  // {
-    // spin[0] = BField[0]/B;
-    // spin[1] = BField[1]/B;
-    // spin[2] = BField[2]/B;
-  // }
-  // if (d_CONST_INT[e_d_CONST_INT_FLAG_MAGNETIC]==1 && B>0 && isfinite(B))
-  // {
-    // dxvsdt[3] += - d_CONST[e_d_CONST_def_CORRECTIVE_FACTOR_SPIN]*(d_CONST[e_d_CONST_def_MOMENT_DIV_MASS])*spin[0] / B * 
-      // (BField[0] * dField_1D_FLAT[0] +     BField[1] * dField_1D_FLAT[1] + BField[2] * dField_1D_FLAT[2]);
-    // dxvsdt[4] += - d_CONST[e_d_CONST_def_CORRECTIVE_FACTOR_SPIN]*(d_CONST[e_d_CONST_def_MOMENT_DIV_MASS])*spin[1] / B * 
-      // (BField[0] * dField_1D_FLAT[3] + BField[1] * dField_1D_FLAT[4] +  BField[2] * dField_1D_FLAT[5]);
-    // dxvsdt[5] += - d_CONST[e_d_CONST_def_CORRECTIVE_FACTOR_SPIN]*(d_CONST[e_d_CONST_def_MOMENT_DIV_MASS])*spin[2] / B * 
-      // (BField[0] * dField_1D_FLAT[6] + BField[1] * dField_1D_FLAT[7] + BField[2] * dField_1D_FLAT[8]);
-  // }
-  // dxvsdt[3] += - (d_CONST[e_d_CONST_def_MOMENT_DIV_MASS])*spin[0] * 
-    // (cos(d_CONST[e_d_CONST_def_HALBACH_K]*xvs[0]) * dField_1D_FLAT[0] + sin(d_CONST[e_d_CONST_def_HALBACH_K]*xvs[0]) * dField_1D_FLAT[1]);
-  // dxvsdt[4] += - (d_CONST[e_d_CONST_def_MOMENT_DIV_MASS])*spin[1] * 
-    // (cos(d_CONST[e_d_CONST_def_HALBACH_K]*xvs[0]) * dField_1D_FLAT[3] + sin(d_CONST[e_d_CONST_def_HALBACH_K]*xvs[0]) * dField_1D_FLAT[4] );
-  // dxvsdt[5] += - (d_CONST[e_d_CONST_def_MOMENT_DIV_MASS])*spin[2] * 
-    // (cos(d_CONST[e_d_CONST_def_HALBACH_K]*xvs[0]) * dField_1D_FLAT[6] + sin(d_CONST[e_d_CONST_def_HALBACH_K]*xvs[0]) * dField_1D_FLAT[7] );
-  // if (B>0 && isfinite(B)) dxvsdt[4] += exp(-2*d_CONST[e_d_CONST_def_HALBACH_K]*xvs[1])*spin[1]*d_CONST[e_d_CONST_def_HALBACH_K]*d_CONST[e_d_CONST_def_HALBACH_MAX_TESLA]*d_CONST[e_d_CONST_def_HALBACH_MAX_TESLA]*d_CONST[e_d_CONST_def_CORRECTIVE_FACTOR_SPIN]*(d_CONST[e_d_CONST_def_MOMENT_DIV_MASS]);
-  /* Gravity is in +/- y direction depending on sign */ 
-  // if (d_CONST_INT[e_d_CONST_INT_FLAG_GRAVITY]==1) dxvsdt[4]  += d_CONST[e_d_CONST_def_GRAVITY];
-  /* Ground spring begins at y=0 and below */
-  // if (d_CONST_INT[e_d_CONST_INT_FLAG_SPRING]==1)
-  // {
-    // if (xvs[1]<0) dxvsdt[4] += -xvs[1]*d_CONST[e_d_CONST_def_SPRING];
-  // }
   double rfstr = d_CONST[e_d_CONST_RF_BFIELD_MAG];
   double  brf[4],omega,btoomega,zrf,zdist,zdelta;
   btoomega = d_CONST[e_d_CONST_def_MOMENT]/d_CONST[e_d_CONST_def_HBAR];  // coeff. for psi-dot 
@@ -285,7 +177,7 @@ __device__ /*__host__*/ int CUDA_derivs_XVS(
   brf[2] = 0.;
   int i;
   double extra_brf[3];
-  // CUDA_RF_BFIELD(t, xvs, extra_brf);
+  // CUDA_RF_BFIELD(t, spinor, extra_brf);
   if (d_CONST_INT[e_d_CONST_INT_FLAG_RF]==1)
   {
     for ( i = 0; i<3; i++) BField[i] += brf[i]; // extra_brf[i];
@@ -293,16 +185,16 @@ __device__ /*__host__*/ int CUDA_derivs_XVS(
   
   // Classical Description of Spin 
   // NB moment has "I=1/2" already... 
-  // dxvsdt[6] = 0.0;
-  // dxvsdt[7] = btoomega*(xvs[8]*BField[2] - xvs[9]*BField[1]);
-  // dxvsdt[8] = btoomega*(xvs[9]*BField[0] - xvs[7]*BField[2]);
-  // dxvsdt[9] = btoomega*(xvs[7]*BField[1] - xvs[8]*BField[0]);
+  // dspinordt[0] = 0.0;
+  // dspinordt[1] = btoomega*(spinor[2]*BField[2] - spinor[3]*BField[1]);
+  // dspinordt[2] = btoomega*(spinor[3]*BField[0] - spinor[1]*BField[2]);
+  // dspinordt[3] = btoomega*(spinor[1]*BField[1] - spinor[2]*BField[0]);
   // ihd/dt = (moment)*(sigma)*B 
   // NB moment has "I=1/2" already... 
-  dxvsdt[6] = btoomega * ( (BField[2] * xvs[7]) + (BField[0] * xvs[9]) - (BField[1] * xvs[8]));
-  dxvsdt[7] = btoomega * (-(BField[2] * xvs[6]) - (BField[0] * xvs[8]) - (BField[1] * xvs[9]));
-  dxvsdt[8] = btoomega * (-(BField[2] * xvs[9]) + (BField[0] * xvs[7]) + (BField[1] * xvs[6]));
-  dxvsdt[9] = btoomega * ( (BField[2] * xvs[8]) - (BField[0] * xvs[6]) + (BField[1] * xvs[7]));
+  dspinordt[0] = btoomega * ( (BField[2] * spinor[1]) + (BField[0] * spinor[3]) - (BField[1] * spinor[2]));
+  dspinordt[1] = btoomega * (-(BField[2] * spinor[0]) - (BField[0] * spinor[2]) - (BField[1] * spinor[3]));
+  dspinordt[2] = btoomega * (-(BField[2] * spinor[3]) + (BField[0] * spinor[1]) + (BField[1] * spinor[0]));
+  dspinordt[3] = btoomega * ( (BField[2] * spinor[2]) - (BField[0] * spinor[0]) + (BField[1] * spinor[1]));
   return 0;
 }
 __device__ /*__host__*/ int CUDA_rkck_XVS( 
@@ -310,16 +202,15 @@ __device__ /*__host__*/ int CUDA_rkck_XVS(
   int *d_IO_INT, 
   int vi_RECORD,
   double t,
-  double xvs[],
-  double dxvsdt[],
+  double spinor[],
+  double dspinordt[],
   double h,
-  double xvserr[],
-  double xvsout[],
-  double BField[], 
-  double dField_1D_FLAT[])
+  double spinorerr[],
+  double spinorout[],
+  double BField[])
 {
-  // double BField[3], dField_1D_FLAT[9];
-  CUDA_derivs_XVS(t, xvs, dxvsdt, BField, dField_1D_FLAT);
+  // double BField[3][3];
+  CUDA_derivs_XVS(t, spinor, dspinordt, BField);
   int i;
   /*   static const a2=(0.2, a3=(0.3, a4=(0.6, a5=(1.0, a6=(0.875; */
   const double b21=(0.2), b31=(3.0/40.0), b32=(9.0/40.0), b41=(0.3), b42=( -0.9), b43=(1.2);
@@ -327,34 +218,33 @@ __device__ /*__host__*/ int CUDA_rkck_XVS(
   const double b61=(1631.0/55296.0), b62=(175.0/512.0), b63=(575.0/13824.0), b64=(44275.0/110592.0), b65=(253.0/4096.0); 
   const double c1=(37.0/378.0), c3=(250.0/621.0), c4=(125.0/594.0), c6=(512.0/1771.0);
   const double dc5=( -277.0/14336.0), dc1=(c1-2825.0/27648.0),  dc3=(c3-18575.0/48384.0), dc4=(c4-13525.0/55296.0), dc6=(c6-0.25);
-  double ak2[4], ak3[4], ak4[4], ak5[4], ak6[4], xvstemp[4];
-  for (i = 0; i<4; i++)   /* First step */ xvstemp[i]=xvs[i]+b21*h*dxvsdt[i];
-  CUDA_derivs_XVS(t, xvs, ak2, BField, dField_1D_FLAT);    /* Second step */
-  for (i = 0; i<4; i++) xvstemp[i]=xvs[i]+h*(b31*dxvsdt[i]+b32*ak2[i]);
-  CUDA_derivs_XVS(t, xvs, ak3, BField, dField_1D_FLAT);    /* Third step */
-  for (i = 0; i<4; i++) xvstemp[i]=xvs[i]+h*(b41*dxvsdt[i]+b42*ak2[i]+b43*ak3[i]);
-  CUDA_derivs_XVS(t, xvs, ak4, BField, dField_1D_FLAT);    /* Fourth step */
-  for (i = 0; i<4; i++) xvstemp[i]=xvs[i]+h*(b51*dxvsdt[i]+b52*ak2[i]+b53*ak3[i]+b54*ak4[i]);
-  CUDA_derivs_XVS(t, xvstemp, ak5, BField, dField_1D_FLAT);    /* Fifth step */
-  for (i = 0; i<4; i++) xvstemp[i]=xvs[i]+h*(b61*dxvsdt[i]+b62*ak2[i]+b63*ak3[i]+b64*ak4[i]+b65*ak5[i]);
-  CUDA_derivs_XVS(t, xvs, ak6, BField, dField_1D_FLAT);    /* Sixth step */
-  for (i = 0; i<4; i++)  xvsout[i]=xvs[i]+h*(c1*dxvsdt[i]+c3*ak3[i]+c4*ak4[i]+c6*ak6[i]); /* Accumulate increments with proper weights */
-  for (i = 0; i<4; i++) xvserr[i]=h*(dc1*dxvsdt[i]+dc3*ak3[i]+dc4*ak4[i]+dc5*ak5[i]+dc6*ak6[i]);
+  double ak2[4], ak3[4], ak4[4], ak5[4], ak6[4], spinortemp[4];
+  for (i = 0; i<4; i++)   /* First step */ spinortemp[i]=spinor[i]+b21*h*dspinordt[i];
+  CUDA_derivs_XVS(t, spinor, ak2, BField);    /* Second step */
+  for (i = 0; i<4; i++) spinortemp[i]=spinor[i]+h*(b31*dspinordt[i]+b32*ak2[i]);
+  CUDA_derivs_XVS(t, spinor, ak3, BField);    /* Third step */
+  for (i = 0; i<4; i++) spinortemp[i]=spinor[i]+h*(b41*dspinordt[i]+b42*ak2[i]+b43*ak3[i]);
+  CUDA_derivs_XVS(t, spinor, ak4, BField);    /* Fourth step */
+  for (i = 0; i<4; i++) spinortemp[i]=spinor[i]+h*(b51*dspinordt[i]+b52*ak2[i]+b53*ak3[i]+b54*ak4[i]);
+  CUDA_derivs_XVS(t, spinortemp, ak5, BField);    /* Fifth step */
+  for (i = 0; i<4; i++) spinortemp[i]=spinor[i]+h*(b61*dspinordt[i]+b62*ak2[i]+b63*ak3[i]+b64*ak4[i]+b65*ak5[i]);
+  CUDA_derivs_XVS(t, spinor, ak6, BField);    /* Sixth step */
+  for (i = 0; i<4; i++)  spinorout[i]=spinor[i]+h*(c1*dspinordt[i]+c3*ak3[i]+c4*ak4[i]+c6*ak6[i]); /* Accumulate increments with proper weights */
+  for (i = 0; i<4; i++) spinorerr[i]=h*(dc1*dspinordt[i]+dc3*ak3[i]+dc4*ak4[i]+dc5*ak5[i]+dc6*ak6[i]);
   return 0;
 }
 __device__ /*__host__*/ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
   double *d_IO, 
   int *d_IO_INT,
   int vi_RECORD, 
-  double xvs[],
-   double dxvsdt[],
+  double spinor[],
+   double dspinordt[],
    double *t,
    double htry,
   double *hdid,
    double *hnext,
-   double xvs_scal[],
+   double spinor_scal[],
    double BField[],
-  double dField_1D_FLAT[],
    double epsilon[],
    int *rkqs_TRIED,
 	 double inter[])
@@ -363,7 +253,7 @@ __device__ /*__host__*/ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
   double hnext_xv;
   double hnext_s;
   double hcurrent = htry;
-  double xvs_temp[4];
+  double spinor_temp[4];
   double epsilon_temp[4];
   double error, error_xv, error_s;
   int return_value = -1;
@@ -377,32 +267,20 @@ __device__ /*__host__*/ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
     d_IO_INT, 
     vi_RECORD, 
     *t, 
-    xvs, 
-    dxvsdt, 
+    spinor, 
+    dspinordt, 
     hcurrent, 
     epsilon_temp, 
-    xvs_temp, 
-    BField, 
-    dField_1D_FLAT);
+    spinor_temp, 
+    BField);
   double epsilon_max_xv = 0.0;
   double epsilon_max_s = 0.0;
   for (i = 0; i<4; i++)
   {
-    if (i<6)
-    {
-      abs_max_xv = fabs(epsilon_temp[i]/xvs_scal[i]);
-      // if (abs_max_xv<0) abs_max_xv *= -1.0; 
-      if (abs_max_xv>epsilon_max_xv) epsilon_max_xv = abs_max_xv;
-      
-    }
-    else
-    {
-      abs_max_s = fabs(epsilon_temp[i]/xvs_scal[i]);
-      // if (abs_max_s<0) abs_max_s *= -1.0; 
-      if (abs_max_s>epsilon_max_s) epsilon_max_s = abs_max_s;
-    }
+		abs_max_s = fabs(epsilon_temp[i]/spinor_scal[i]);
+		// if (abs_max_s<0) abs_max_s *= -1.0; 
+		if (abs_max_s>epsilon_max_s) epsilon_max_s = abs_max_s;
   }
-  error_xv = epsilon_max_xv/d_CONST[e_d_CONST_def_MAXERR];
   error_s = epsilon_max_s/d_CONST[e_d_CONST_def_MAXERR1];
   
   /////////////////////////////////////////////////////////////////////////
@@ -449,7 +327,7 @@ __device__ /*__host__*/ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
   {
     for (i=0; i<4; i++)
     {
-      xvs[i] = xvs_temp[i];
+      spinor[i] = spinor_temp[i];
       epsilon[i] = epsilon_temp[i];
     }
     *t += hcurrent;
@@ -518,8 +396,8 @@ __device__ /*__host__*/ int CUDA_RECORD_DOUBLE(
 }
 __device__ /*__host__*/ int CUDA_RECORD_XVS( 
   double *d_IO, int *d_IO_INT,  int *p_vi_RECORD, 
-  double l_time_CURRENT, double l_xvs[], double l_epsilon[], double l_xvs_scal[], double l_dxvsdt[], 
-  double l_BField[], double l_dField_1D_FLAT[], double l_pol, int l_rkqs_TRIED, double l_hnext)
+  double l_time_CURRENT, double l_spinor[], double l_epsilon[], double l_spinor_scal[], double l_dspinordt[], 
+  double l_BField[], double l_pol, int l_rkqs_TRIED, double l_hnext)
 {
   int vi_DOUBLE_IO_OFFSET = (getGlobalIdx_3D_3D()*d_CONST_INT[e_d_CONST_INT_numRecordsPerThread] + (*p_vi_RECORD))*e_d_IO_LAST;
   int vi_INT_IO_OFFSET = (getGlobalIdx_3D_3D()*d_CONST_INT[e_d_CONST_INT_numRecordsPerThread] + (*p_vi_RECORD))*e_d_IO_INT_LAST;
@@ -530,61 +408,25 @@ __device__ /*__host__*/ int CUDA_RECORD_XVS(
   d_IO_INT[vi_INT_IO_OFFSET + e_d_IO_INT_RKQS_STEPS] = l_rkqs_TRIED; 
   
   d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_T] = l_time_CURRENT;
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_X] = l_xvs[0];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_Y] = l_xvs[1];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_Z] = l_xvs[2];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_VX] = l_xvs[3];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_VY] = l_xvs[4];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_VZ] = l_xvs[5];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SX] = CUDA_SPIN_XVS_SINGLE(l_xvs, 0);
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SY] = CUDA_SPIN_XVS_SINGLE(l_xvs, 1);
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SZ] = CUDA_SPIN_XVS_SINGLE(l_xvs, 2);
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_X] = l_epsilon[0];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_Y] = l_epsilon[1];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_Z] = l_epsilon[2];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_VX] = l_epsilon[3];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_VY] = l_epsilon[4];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_VZ] = l_epsilon[5];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_X] = l_xvs_scal[0];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_Y] = l_xvs_scal[1];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_Z] = l_xvs_scal[2];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_VX] = l_xvs_scal[3];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_VY] = l_xvs_scal[4];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_VZ] = l_xvs_scal[5];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_RED_VX] = l_dxvsdt[0];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_RED_VY] = l_dxvsdt[1];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_RED_VZ] = l_dxvsdt[2];  
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_AX] = l_dxvsdt[3];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_AY] = l_dxvsdt[4];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_AZ] = l_dxvsdt[5];
   d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_BX] = l_BField[0];
   d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_BY] = l_BField[1];
   d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_BZ] = l_BField[2];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_dB_XDX] = l_dField_1D_FLAT[0];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_dB_XDY] = l_dField_1D_FLAT[1];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_dB_XDZ] = l_dField_1D_FLAT[2];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_dB_YDX] = l_dField_1D_FLAT[3];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_dB_YDY] = l_dField_1D_FLAT[4];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_dB_YDZ] = l_dField_1D_FLAT[5];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_dB_ZDX] = l_dField_1D_FLAT[6];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_dB_ZDY] = l_dField_1D_FLAT[7];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_dB_ZDZ] = l_dField_1D_FLAT[8];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SPINNOR_0] = l_xvs[6];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SPINNOR_1] = l_xvs[7];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SPINNOR_2] = l_xvs[8];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SPINNOR_3] = l_xvs[9];
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_DDT_SPINNOR_0] = l_dxvsdt[6]; 
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_DDT_SPINNOR_1] = l_dxvsdt[7]; 
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_DDT_SPINNOR_2] = l_dxvsdt[8]; 
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_DDT_SPINNOR_3] = l_dxvsdt[9]; 
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_SPINNOR_0] = l_epsilon[6]; 
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_SPINNOR_1] = l_epsilon[7]; 
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_SPINNOR_2] = l_epsilon[8]; 
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_SPINNOR_3] = l_epsilon[9];   
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_SPINNOR_0] = l_xvs_scal[6]; 
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_SPINNOR_1] = l_xvs_scal[7]; 
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_SPINNOR_2] = l_xvs_scal[8]; 
-  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_SPINNOR_3] = l_xvs_scal[9];
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SPINNOR_0] = l_spinor[0];
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SPINNOR_1] = l_spinor[1];
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SPINNOR_2] = l_spinor[2];
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SPINNOR_3] = l_spinor[3];
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_DDT_SPINNOR_0] = l_dspinordt[0]; 
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_DDT_SPINNOR_1] = l_dspinordt[1]; 
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_DDT_SPINNOR_2] = l_dspinordt[2]; 
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_DDT_SPINNOR_3] = l_dspinordt[3]; 
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_SPINNOR_0] = l_epsilon[0]; 
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_SPINNOR_1] = l_epsilon[1]; 
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_SPINNOR_2] = l_epsilon[2]; 
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_ERR_SPINNOR_3] = l_epsilon[3];   
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_SPINNOR_0] = l_spinor_scal[0]; 
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_SPINNOR_1] = l_spinor_scal[1]; 
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_SPINNOR_2] = l_spinor_scal[2]; 
+  d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_SCAL_SPINNOR_3] = l_spinor_scal[3];
   d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_POLARIZATION] = l_pol;
   d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_HNEXT] = l_hnext;
   
@@ -606,12 +448,11 @@ __global__ void GENERIC_PIECEWISE_KERNEL_MULTI_XVS_RKQS_LOOP(
   int i, j, k, vi_RECORD, vi_RKQS_STEP, return_value_RKQS, l_rkqs_TRIED;
   int l_odeint_steps, vi_BREAK_FLAG, vi_REVERSE_FLAG, vi_INDEX;
   double l_time_CURRENT;
-  double l_xvs[4];
-  double l_dxvsdt[4];
-  double l_xvs_scal[4];
+  double l_spinor[4];
+  double l_dspinordt[4];
+  double l_spinor_scal[4];
   double l_epsilon[4];
   double l_BField[3];
-  double l_dField_1D_FLAT[9];
   double l_pol;
   double l_hnext, l_hdid, l_htry;
   int vi_RECORD_IO_OFFSET_START = getGlobalIdx_3D_3D()*d_CONST_INT[e_d_CONST_INT_numRecordsPerThread] + numRecordsStart;
@@ -624,18 +465,14 @@ __global__ void GENERIC_PIECEWISE_KERNEL_MULTI_XVS_RKQS_LOOP(
   l_time_CURRENT = d_IO[vi_IO_DOUBLE_OFFSET_START + e_d_IO_T]; 
   for (i = 0 ; i<4; i++)
   {
-    l_xvs[i] = d_IO[vi_IO_DOUBLE_OFFSET_START + e_d_IO_X + i];
-    l_dxvsdt[i] = d_IO[vi_IO_DOUBLE_OFFSET_START + e_d_IO_RED_VX + i];
-    l_xvs_scal[i] = d_IO[vi_IO_DOUBLE_OFFSET_START + e_d_IO_SCAL_X + i];
+    l_spinor[i] = d_IO[vi_IO_DOUBLE_OFFSET_START + e_d_IO_X + i];
+    l_dspinordt[i] = d_IO[vi_IO_DOUBLE_OFFSET_START + e_d_IO_RED_VX + i];
+    l_spinor_scal[i] = d_IO[vi_IO_DOUBLE_OFFSET_START + e_d_IO_SCAL_X + i];
     l_epsilon[i] = d_IO[vi_IO_DOUBLE_OFFSET_START + e_d_IO_ERR_X + i];
   }
   for (i = 0 ; i<3; i++)
   {
     l_BField[i] = d_IO[vi_IO_DOUBLE_OFFSET_START + e_d_IO_BX + i]; 
-  }
-  for (i = 0 ; i<9; i++)
-  {
-    l_dField_1D_FLAT[i] = d_IO[vi_IO_DOUBLE_OFFSET_START + e_d_IO_dB_XDX + i]; 
   }
   l_pol = d_IO[vi_IO_DOUBLE_OFFSET_START + e_d_IO_POLARIZATION]; 
   l_hnext = d_IO[vi_IO_DOUBLE_OFFSET_START + e_d_IO_HNEXT]; 
@@ -647,18 +484,13 @@ __global__ void GENERIC_PIECEWISE_KERNEL_MULTI_XVS_RKQS_LOOP(
     l_BField[i] = d_IO[vi_IO_DOUBLE_OFFSET_START + e_d_IO_BX + i]; 
     
   }
-  for (i = 0 ; i<9; i++)
-  {
-    l_dField_1D_FLAT[i] = d_IO[vi_IO_DOUBLE_OFFSET_START + e_d_IO_dB_XDX + i]; 
-    
-  }
   l_pol = d_IO[vi_IO_DOUBLE_OFFSET_START + e_d_IO_POLARIZATION]; 
   l_hnext = d_IO[vi_IO_DOUBLE_OFFSET_START + e_d_IO_HNEXT]; 
   
-  // CUDA_setspin( l_xvs, l_spin, l_spinnor, l_BField);
+  // CUDA_setspin( l_spinor, l_spin, l_spinnor, l_BField);
   int vi_CYCLE = 0;
-  CUDA_derivs_XVS(l_time_CURRENT, l_xvs, l_dxvsdt, l_BField, l_dField_1D_FLAT);
-  l_pol = CUDA_polcalc_XVS(l_BField[0], l_BField[1], l_BField[2], l_xvs);
+  CUDA_derivs_XVS(l_time_CURRENT, l_spinor, l_dspinordt, l_BField);
+  l_pol = CUDA_polcalc_XVS(l_BField[0], l_BField[1], l_BField[2], l_spinor);
   vi_REVERSE_FLAG = 0;
   // if (d_CONST[e_d_CONST_h1]<d_CONST[e_d_CONST_h1_SPIN]) l_htry = d_CONST[e_d_CONST_h1];
   // else l_htry = fmin(d_CONST[e_d_CONST_h1],d_CONST[e_d_CONST_h1_SPIN]);
@@ -667,16 +499,10 @@ __global__ void GENERIC_PIECEWISE_KERNEL_MULTI_XVS_RKQS_LOOP(
   while(vi_RECORD<numRecordsEnd)
   {
     l_htry = l_hnext;
-    l_xvs_scal[0]=fabs(l_xvs[0])+fabs(l_dxvsdt[0]*l_htry)+d_CONST[e_d_CONST_def_TINY];
-    l_xvs_scal[1]=fabs(l_xvs[1])+fabs(l_dxvsdt[1]*l_htry)+d_CONST[e_d_CONST_def_TINY];
-    l_xvs_scal[2]=fabs(l_xvs[2])+fabs(l_dxvsdt[2]*l_htry)+d_CONST[e_d_CONST_def_TINY];
-    l_xvs_scal[3]=fabs(l_xvs[3])+fabs(l_dxvsdt[3]*l_htry)+d_CONST[e_d_CONST_def_TINY];
-    l_xvs_scal[4]=fabs(l_xvs[4])+fabs(l_dxvsdt[4]*l_htry)+d_CONST[e_d_CONST_def_TINY];
-    l_xvs_scal[5]=fabs(l_xvs[5])+fabs(l_dxvsdt[5]*l_htry)+d_CONST[e_d_CONST_def_TINY];
-    l_xvs_scal[6]=fabs(l_xvs[6])+fabs(l_dxvsdt[6]*l_htry)+d_CONST[e_d_CONST_def_TINY1];
-    l_xvs_scal[7]=fabs(l_xvs[7])+fabs(l_dxvsdt[7]*l_htry)+d_CONST[e_d_CONST_def_TINY1];
-    l_xvs_scal[8]=fabs(l_xvs[8])+fabs(l_dxvsdt[8]*l_htry)+d_CONST[e_d_CONST_def_TINY1];
-    l_xvs_scal[9]=fabs(l_xvs[9])+fabs(l_dxvsdt[9]*l_htry)+d_CONST[e_d_CONST_def_TINY1];
+    l_spinor_scal[0]=fabs(l_spinor[0])+fabs(l_dspinordt[0]*l_htry)+d_CONST[e_d_CONST_def_TINY1];
+    l_spinor_scal[1]=fabs(l_spinor[1])+fabs(l_dspinordt[1]*l_htry)+d_CONST[e_d_CONST_def_TINY1];
+    l_spinor_scal[2]=fabs(l_spinor[2])+fabs(l_dspinordt[2]*l_htry)+d_CONST[e_d_CONST_def_TINY1];
+    l_spinor_scal[3]=fabs(l_spinor[3])+fabs(l_dspinordt[3]*l_htry)+d_CONST[e_d_CONST_def_TINY1];
     
     // if (0==0)/*(vi_RKQS_STEP>0 && (vi_RKQS_STEP%d_CONST_INT[e_d_CONST_INT_numCyclesPerRecord]))*/
       // {
@@ -693,11 +519,11 @@ __global__ void GENERIC_PIECEWISE_KERNEL_MULTI_XVS_RKQS_LOOP(
       // }
     if (vi_RECORD==0)
     {
-      CUDA_derivs_XVS(l_time_CURRENT, l_xvs, l_dxvsdt, l_BField, l_dField_1D_FLAT);
-      l_pol = CUDA_polcalc_XVS(l_BField[0], l_BField[1], l_BField[2], l_xvs);
+      CUDA_derivs_XVS(l_time_CURRENT, l_spinor, l_dspinordt, l_BField);
+      l_pol = CUDA_polcalc_XVS(l_BField[0], l_BField[1], l_BField[2], l_spinor);
       CUDA_RECORD_XVS(d_IO, d_IO_INT,  &vi_RECORD, 
-        l_time_CURRENT, l_xvs, l_epsilon, l_xvs_scal, l_dxvsdt, 
-        l_BField, l_dField_1D_FLAT, l_pol, l_rkqs_TRIED, l_hnext);
+        l_time_CURRENT, l_spinor, l_epsilon, l_spinor_scal, l_dspinordt, 
+        l_BField, l_pol, l_rkqs_TRIED, l_hnext);
     }
     else
     {
@@ -705,30 +531,29 @@ __global__ void GENERIC_PIECEWISE_KERNEL_MULTI_XVS_RKQS_LOOP(
         d_IO, 
         d_IO_INT, 
         vi_RECORD, 
-        l_xvs, 
-        l_dxvsdt, 
+        l_spinor, 
+        l_dspinordt, 
         &l_time_CURRENT, 
         l_htry, 
         &l_hdid, 
         &l_hnext, 
-        l_xvs_scal, 
+        l_spinor_scal, 
         l_BField, 
-        l_dField_1D_FLAT, 
         l_epsilon, 
         &l_rkqs_TRIED);
       if (return_value_RKQS==e_RKQS_ERROR_NONE)
       {
         l_time_CURRENT = l_time_CURRENT + l_hdid;
-        CUDA_derivs_XVS(l_time_CURRENT, l_xvs, l_dxvsdt, l_BField, l_dField_1D_FLAT);
-        l_pol = CUDA_polcalc_XVS(l_BField[0], l_BField[1], l_BField[2], l_xvs);
+        CUDA_derivs_XVS(l_time_CURRENT, l_spinor, l_dspinordt, l_BField);
+        l_pol = CUDA_polcalc_XVS(l_BField[0], l_BField[1], l_BField[2], l_spinor);
         // CUDA_RECORD_DOUBLE(d_IO, vi_RECORD, e_d_IO_EXTRA_1, l_hnext);
         vi_RKQS_STEP++;
         if (vi_RKQS_STEP>=d_CONST_INT[e_d_CONST_INT_numCyclesPerRecord])
         {
           // CUDA_RECORD_DOUBLE(d_IO, vi_RECORD, e_d_IO_EXTRA_0, l_time_CURRENT);
           CUDA_RECORD_XVS(d_IO, d_IO_INT,  &vi_RECORD, 
-            l_time_CURRENT, l_xvs, l_epsilon, l_xvs_scal, l_dxvsdt, 
-            l_BField, l_dField_1D_FLAT, l_pol, l_rkqs_TRIED, l_hnext);
+            l_time_CURRENT, l_spinor, l_epsilon, l_spinor_scal, l_dspinordt, 
+            l_BField, l_pol, l_rkqs_TRIED, l_hnext);
           vi_RKQS_STEP = 0;
         }
         l_rkqs_TRIED = 0;
@@ -760,18 +585,14 @@ __global__ void GENERIC_PIECEWISE_KERNEL_MULTI_XVS_RKQS_LOOP(
   d_IO[vi_IO_DOUBLE_OFFSET_END + e_d_IO_T] = l_time_CURRENT; 
   for (i = 0 ; i<4; i++)
   {
-    d_IO[vi_IO_DOUBLE_OFFSET_END + e_d_IO_X + i] = l_xvs[i];
-    d_IO[vi_IO_DOUBLE_OFFSET_END + e_d_IO_RED_VX + i] =   l_dxvsdt[i];
-    d_IO[vi_IO_DOUBLE_OFFSET_END + e_d_IO_SCAL_X + i] =   l_xvs_scal[i];
+    d_IO[vi_IO_DOUBLE_OFFSET_END + e_d_IO_X + i] = l_spinor[i];
+    d_IO[vi_IO_DOUBLE_OFFSET_END + e_d_IO_RED_VX + i] =   l_dspinordt[i];
+    d_IO[vi_IO_DOUBLE_OFFSET_END + e_d_IO_SCAL_X + i] =   l_spinor_scal[i];
     d_IO[vi_IO_DOUBLE_OFFSET_END + e_d_IO_ERR_X + i] =   l_epsilon[i];
   }
   for (i = 0 ; i<3; i++)
   {
     d_IO[vi_IO_DOUBLE_OFFSET_END + e_d_IO_BX + i] = l_BField[i]; 
-  }
-  for (i = 0 ; i<9; i++)
-  {
-    d_IO[vi_IO_DOUBLE_OFFSET_END + e_d_IO_dB_XDX + i] = l_dField_1D_FLAT[i]; 
   }
   d_IO[vi_IO_DOUBLE_OFFSET_END + e_d_IO_POLARIZATION] = l_pol; 
   d_IO[vi_IO_DOUBLE_OFFSET_END + e_d_IO_HNEXT] = l_hnext; 
