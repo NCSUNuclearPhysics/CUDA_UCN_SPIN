@@ -463,26 +463,26 @@ __device__ /*__host__*/ int CUDA_derivs_XVS(
   double BField[],
   double dField_1D_FLAT[])
 {  
-  double x,y,z;  /* Cartesian coordinates */
-  double rad, th;  /* Polar coordinates */
-  double B;   /* Magnitude of B */
-  int Bgood;
-  double spin[3];
-  CUDA_SPIN_XVS_XYZ(spin, xvs);
-  x=xvs[0];
-  y=xvs[1];
-  z=xvs[2];
-  rad=CUDA_r(x,y,z);
-  th=CUDA_theta(x,y,z);
-  dxvsdt[0]=xvs[3]; /* derivative of x = v in x direction */
-  dxvsdt[1]=xvs[4]; /* ditto for y */
-  dxvsdt[2]=xvs[5]; /* ditto for z */
-  dxvsdt[3]=0; /* initializing acceleration in x direction */
-  dxvsdt[4]=0; /* ditto for y */
-  dxvsdt[5]=0; /* ditto for z */
-  Bgood = CUDA_Mag_XVS(xvs, BField);
-  B = sqrt( BField[0]*BField[0]+BField[1]*BField[1]+BField[2]*BField[2]);
-  Bgood = CUDA_dB_XVS(xvs, BField, dField_1D_FLAT);
+  // double x,y,z;  /* Cartesian coordinates */
+  // double rad, th;  /* Polar coordinates */
+  // double B;   /* Magnitude of B */
+  // int Bgood;
+  // double spin[3];
+  // CUDA_SPIN_XVS_XYZ(spin, xvs);
+  // x=xvs[0];
+  // y=xvs[1];
+  // z=xvs[2];
+  // rad=CUDA_r(x,y,z);
+  // th=CUDA_theta(x,y,z);
+  // dxvsdt[0]=xvs[3]; /* derivative of x = v in x direction */
+  // dxvsdt[1]=xvs[4]; /* ditto for y */
+  // dxvsdt[2]=xvs[5]; /* ditto for z */
+  // dxvsdt[3]=0; /* initializing acceleration in x direction */
+  // dxvsdt[4]=0; /* ditto for y */
+  // dxvsdt[5]=0; /* ditto for z */
+  // Bgood = CUDA_Mag_XVS(xvs, BField);
+  // B = sqrt( BField[0]*BField[0]+BField[1]*BField[1]+BField[2]*BField[2]);
+  // Bgood = CUDA_dB_XVS(xvs, BField, dField_1D_FLAT);
   // if (d_CONST_INT[e_d_CONST_INT_def_PERFECT_POLARIZATION] && 
     // isfinite(BField[0]) && 
     // isfinite(BField[1]) && 
@@ -493,15 +493,15 @@ __device__ /*__host__*/ int CUDA_derivs_XVS(
     // spin[1] = BField[1]/B;
     // spin[2] = BField[2]/B;
   // }
-  if (d_CONST_INT[e_d_CONST_INT_FLAG_MAGNETIC]==1 && B>0 && isfinite(B))
-  {
-    dxvsdt[3] += - d_CONST[e_d_CONST_def_CORRECTIVE_FACTOR_SPIN]*(d_CONST[e_d_CONST_def_MOMENT_DIV_MASS])*spin[0] / B * 
-      (BField[0] * dField_1D_FLAT[0] +     BField[1] * dField_1D_FLAT[1] + BField[2] * dField_1D_FLAT[2]);
-    dxvsdt[4] += - d_CONST[e_d_CONST_def_CORRECTIVE_FACTOR_SPIN]*(d_CONST[e_d_CONST_def_MOMENT_DIV_MASS])*spin[1] / B * 
-      (BField[0] * dField_1D_FLAT[3] + BField[1] * dField_1D_FLAT[4] +  BField[2] * dField_1D_FLAT[5]);
-    dxvsdt[5] += - d_CONST[e_d_CONST_def_CORRECTIVE_FACTOR_SPIN]*(d_CONST[e_d_CONST_def_MOMENT_DIV_MASS])*spin[2] / B * 
-      (BField[0] * dField_1D_FLAT[6] + BField[1] * dField_1D_FLAT[7] + BField[2] * dField_1D_FLAT[8]);
-  }
+  // if (d_CONST_INT[e_d_CONST_INT_FLAG_MAGNETIC]==1 && B>0 && isfinite(B))
+  // {
+    // dxvsdt[3] += - d_CONST[e_d_CONST_def_CORRECTIVE_FACTOR_SPIN]*(d_CONST[e_d_CONST_def_MOMENT_DIV_MASS])*spin[0] / B * 
+      // (BField[0] * dField_1D_FLAT[0] +     BField[1] * dField_1D_FLAT[1] + BField[2] * dField_1D_FLAT[2]);
+    // dxvsdt[4] += - d_CONST[e_d_CONST_def_CORRECTIVE_FACTOR_SPIN]*(d_CONST[e_d_CONST_def_MOMENT_DIV_MASS])*spin[1] / B * 
+      // (BField[0] * dField_1D_FLAT[3] + BField[1] * dField_1D_FLAT[4] +  BField[2] * dField_1D_FLAT[5]);
+    // dxvsdt[5] += - d_CONST[e_d_CONST_def_CORRECTIVE_FACTOR_SPIN]*(d_CONST[e_d_CONST_def_MOMENT_DIV_MASS])*spin[2] / B * 
+      // (BField[0] * dField_1D_FLAT[6] + BField[1] * dField_1D_FLAT[7] + BField[2] * dField_1D_FLAT[8]);
+  // }
   // dxvsdt[3] += - (d_CONST[e_d_CONST_def_MOMENT_DIV_MASS])*spin[0] * 
     // (cos(d_CONST[e_d_CONST_def_HALBACH_K]*xvs[0]) * dField_1D_FLAT[0] + sin(d_CONST[e_d_CONST_def_HALBACH_K]*xvs[0]) * dField_1D_FLAT[1]);
   // dxvsdt[4] += - (d_CONST[e_d_CONST_def_MOMENT_DIV_MASS])*spin[1] * 
@@ -510,19 +510,30 @@ __device__ /*__host__*/ int CUDA_derivs_XVS(
     // (cos(d_CONST[e_d_CONST_def_HALBACH_K]*xvs[0]) * dField_1D_FLAT[6] + sin(d_CONST[e_d_CONST_def_HALBACH_K]*xvs[0]) * dField_1D_FLAT[7] );
   // if (B>0 && isfinite(B)) dxvsdt[4] += exp(-2*d_CONST[e_d_CONST_def_HALBACH_K]*xvs[1])*spin[1]*d_CONST[e_d_CONST_def_HALBACH_K]*d_CONST[e_d_CONST_def_HALBACH_MAX_TESLA]*d_CONST[e_d_CONST_def_HALBACH_MAX_TESLA]*d_CONST[e_d_CONST_def_CORRECTIVE_FACTOR_SPIN]*(d_CONST[e_d_CONST_def_MOMENT_DIV_MASS]);
   /* Gravity is in +/- y direction depending on sign */ 
-  if (d_CONST_INT[e_d_CONST_INT_FLAG_GRAVITY]==1) dxvsdt[4]  += d_CONST[e_d_CONST_def_GRAVITY];
+  // if (d_CONST_INT[e_d_CONST_INT_FLAG_GRAVITY]==1) dxvsdt[4]  += d_CONST[e_d_CONST_def_GRAVITY];
   /* Ground spring begins at y=0 and below */
-  if (d_CONST_INT[e_d_CONST_INT_FLAG_SPRING]==1)
-  {
-    if (xvs[1]<0) dxvsdt[4] += -xvs[1]*d_CONST[e_d_CONST_def_SPRING];
-  }
+  // if (d_CONST_INT[e_d_CONST_INT_FLAG_SPRING]==1)
+  // {
+    // if (xvs[1]<0) dxvsdt[4] += -xvs[1]*d_CONST[e_d_CONST_def_SPRING];
+  // }
   double rfstr = d_CONST[e_d_CONST_RF_BFIELD_MAG];
   double  brf[4],omega,btoomega,zrf,zdist,zdelta;
   btoomega = d_CONST[e_d_CONST_def_MOMENT]/d_CONST[e_d_CONST_def_HBAR];  // coeff. for psi-dot 
   omega    = 2.0*d_CONST[e_d_CONST_def_MOMENT]*(1.0)/d_CONST[e_d_CONST_def_HBAR]; // reson. frequ. for 1.0 T field 
   zrf      = 1.14; // chosen to match crossing poconst int 
   // some comment explaining this. v 
-  zdist = spin[2];
+	double t_INTERVAL = inter[e_inter_t_FINAL] - inter[e_inter_t_INITIAL];
+	double t_STEP = t - inter[e_inter_t_INITIAL];
+	double BField_STEP[3];
+	spin_INTERVAL_3 = inter[e_inter_spin_FINAL_3] - inter[e_inter_spin_INITIAL_3];
+  double BField_INTERVAL_X = inter[e_inter_BField_FINAL_X] - inter[e_inter_BField_INITIAL_X];
+  double BField_INTERVAL_Y = inter[e_inter_BField_FINAL_Y] - inter[e_inter_BField_INITIAL_Y];
+  double BField_INTERVAL_Z = inter[e_inter_BField_FINAL_Z] - inter[e_inter_BField_INITIAL_Z];
+  BField[0] = (BField_INTERVAL_X/t_INTERVAL)*t_STEP + inter[e_inter_BField_INITIAL_X];
+  BField[1] = (BField_INTERVAL_Y/t_INTERVAL)*t_STEP + inter[e_inter_BField_INITIAL_Y];
+  BField[2] = (BField_INTERVAL_Z/t_INTERVAL)*t_STEP + inter[e_inter_BField_INITIAL_Z];
+  
+	zdist = (spin_INTERVAL_3/t_INTERVAL)*t_STEP+inter[e_inter_spin_INITIAL_3]; //spin[2];
   zdelta = (zdist - zrf)*(zdist -zrf)/(.05*.05);
   brf[0] = rfstr*cos(omega*(t-0.0)) * (1.0/((1.0+zdelta)*(1.0+zdelta))); 
   brf[1] = 0.;
@@ -530,24 +541,24 @@ __device__ /*__host__*/ int CUDA_derivs_XVS(
   brf[2] = 0.;
   int i;
   double extra_brf[3];
-  CUDA_RF_BFIELD(t, xvs, extra_brf);
+  // CUDA_RF_BFIELD(t, xvs, extra_brf);
   if (d_CONST_INT[e_d_CONST_INT_FLAG_RF]==1)
   {
-    for ( i = 0; i<3; i++) BField[i] += extra_brf[i];
+    for ( i = 0; i<3; i++) BField[i] += brf[i]; // extra_brf[i];
   }
   
   // Classical Description of Spin 
   // NB moment has "I=1/2" already... 
-  dxvsdt[6] = 0.0;
-  dxvsdt[7] = btoomega*(xvs[8]*BField[2] - xvs[9]*BField[1]);
-  dxvsdt[8] = btoomega*(xvs[9]*BField[0] - xvs[7]*BField[2]);
-  dxvsdt[9] = btoomega*(xvs[7]*BField[1] - xvs[8]*BField[0]);
+  // dxvsdt[6] = 0.0;
+  // dxvsdt[7] = btoomega*(xvs[8]*BField[2] - xvs[9]*BField[1]);
+  // dxvsdt[8] = btoomega*(xvs[9]*BField[0] - xvs[7]*BField[2]);
+  // dxvsdt[9] = btoomega*(xvs[7]*BField[1] - xvs[8]*BField[0]);
   // ihd/dt = (moment)*(sigma)*B 
   // NB moment has "I=1/2" already... 
-  // dxvsdt[6] = btoomega * ( (BField[2] * xvs[7]) + (BField[0] * xvs[9]) - (BField[1] * xvs[8]));
-  // dxvsdt[7] = btoomega * (-(BField[2] * xvs[6]) - (BField[0] * xvs[8]) - (BField[1] * xvs[9]));
-  // dxvsdt[8] = btoomega * (-(BField[2] * xvs[9]) + (BField[0] * xvs[7]) + (BField[1] * xvs[6]));
-  // dxvsdt[9] = btoomega * ( (BField[2] * xvs[8]) - (BField[0] * xvs[6]) + (BField[1] * xvs[7]));
+  dxvsdt[6] = btoomega * ( (BField[2] * xvs[7]) + (BField[0] * xvs[9]) - (BField[1] * xvs[8]));
+  dxvsdt[7] = btoomega * (-(BField[2] * xvs[6]) - (BField[0] * xvs[8]) - (BField[1] * xvs[9]));
+  dxvsdt[8] = btoomega * (-(BField[2] * xvs[9]) + (BField[0] * xvs[7]) + (BField[1] * xvs[6]));
+  dxvsdt[9] = btoomega * ( (BField[2] * xvs[8]) - (BField[0] * xvs[6]) + (BField[1] * xvs[7]));
   return 0;
 }
 __device__ /*__host__*/ int CUDA_rkck_XVS( 
@@ -601,7 +612,8 @@ __device__ /*__host__*/ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
    double BField[],
   double dField_1D_FLAT[],
    double epsilon[],
-   int *rkqs_TRIED)
+   int *rkqs_TRIED,
+	 double inter[])
 {
   int i, j, k;
   double hnext_xv;
@@ -650,17 +662,9 @@ __device__ /*__host__*/ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
   error_s = epsilon_max_s/d_CONST[e_d_CONST_def_MAXERR1];
   
   /////////////////////////////////////////////////////////////////////////
-  /////////////////// XV AND SPIN STEP COMPUTATION ////////////////////////
+  /////////////////// SPIN STEP COMPUTATION ////////////////////////
   /////////////////////////////////////////////////////////////////////////
   
-  /* XV: Step succeeded. Compute size of next step */
-  hnext_xv_GU = d_CONST[e_d_CONST_def_SAFETY]*hcurrent*pow(error_xv,d_CONST[e_d_CONST_def_PGROW]);
-  /* XV: No more than a factor of 5 increase */
-  hnext_xv_GB = 5.0*hcurrent; // ((hnext_xv_GU >= 0.0) ? fmin(hnext_xv_GU, 5.0*hcurrent) : fmax(hnext_xv_GU, 5.0*hcurrent));
-  /* XV: Truncation error too large. Reduce stepsize */
-  hnext_xv_SU = d_CONST[e_d_CONST_def_SAFETY]*hcurrent*pow(error_xv, d_CONST[e_d_CONST_def_PSHRNK]);
-  /* XV: No more than a factor of 10 */
-  hnext_xv_SB = 0.1*hcurrent; // ((hnext_xv_SU >= 0.0) ? fmax(hnext_xv_SU, 0.1*hcurrent) : fmin(hnext_xv_SU, 0.1*hcurrent));
   /* S: Step succeeded. Compute size of next step */
   hnext_s_GU = d_CONST[e_d_CONST_def_SAFETY1]*hcurrent*pow(error_s,d_CONST[e_d_CONST_def_PGROW1]);
   /* S: No more than a factor of 5 increase */
@@ -670,22 +674,7 @@ __device__ /*__host__*/ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
   /* S: No more than a factor of 10 */
   hnext_s_SB = 0.1*hcurrent; // ((hcurrent >= 0.0) ? fmax(hnext_s_SU, 0.1*hcurrent) : fmin(hnext_s_SU, 0.1*hcurrent));
   
-  /////////////////////////////////////////////////////////////////////////
-  /////////////////// XV ERROR AND STEP DECISION //////////////////////////
-  /////////////////////////////////////////////////////////////////////////
-  
-  if (error_xv <= 1.0)
-  {
-    hnext_xv = ((hcurrent >= 0.0) ? fmin(hnext_xv_GU, hnext_xv_GB) : fmax(hnext_xv_GU, hnext_xv_GB));
-    return_value_xv = 0;
-  }
-  else if (error_xv > 1.0)
-  {
-    hnext_xv = ((hcurrent >= 0.0) ? fmax(hnext_xv_SU, hnext_xv_SB) : fmin(hnext_xv_SU, hnext_xv_SB));
-    return_value_xv = 1;
-  }
-  
-  /////////////////////////////////////////////////////////////////////////
+ /////////////////////////////////////////////////////////////////////////
   ////////////////// SPIN ERROR AND STEP DECISION /////////////////////////
   /////////////////////////////////////////////////////////////////////////
   
@@ -724,11 +713,11 @@ __device__ /*__host__*/ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
     *rkqs_TRIED = 0;
     if (hcurrent<=0.0)
     {
-      *hnext = fmax ( fmax (hnext_xv, hnext_s) , fmax ( d_CONST[e_d_CONST_tframe], d_CONST[e_d_CONST_tframe_SPIN]));
+      *hnext = fmax ( hnext_s , fmax ( d_CONST[e_d_CONST_tframe], d_CONST[e_d_CONST_tframe_SPIN]));
     }
     else if (hcurrent>0.0) 
     {
-      *hnext = fmin ( fmin (hnext_xv, hnext_s) , fmin ( d_CONST[e_d_CONST_tframe], d_CONST[e_d_CONST_tframe_SPIN]));
+      *hnext = fmin ( hnext_s , fmin ( d_CONST[e_d_CONST_tframe], d_CONST[e_d_CONST_tframe_SPIN]));
     }
     return_value = e_RKQS_ERROR_NONE;
   }
@@ -736,26 +725,10 @@ __device__ /*__host__*/ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
   {
     *hdid = 0.0;
     (*rkqs_TRIED)++;
-    if (return_value_xv==1 && return_value_s==0) 
-    {
-      *hnext = hnext_xv;
-      return_value = e_RKQS_ERROR_XV_BOUNDS;
-    }
-    else if (return_value_xv==0 && return_value_s==1)
+    if (return_value_s==1)
     {
       *hnext = hnext_s;
       return_value = e_RKQS_ERROR_SPIN_BOUNDS;
-    }
-    else if (return_value_xv==1 && return_value_s==1)
-    {
-      if ((hnext_xv<=0.0 && hnext_s<=0.0) || (hnext_xv>0.0 && hnext_s>0.0>=0.0))
-      {
-        return_value = e_RKQS_ERROR_COMBINED_BOUNDS;
-        if (hnext_xv>0.0 && hnext_s>0.0) *hnext = fmin (hnext_xv, hnext_s);
-        else if (hnext_xv<=0.0 && hnext_s<=0.0) *hnext = fmin (hnext_xv, hnext_s);
-      }
-      else return_value = e_RKQS_ERROR_REVERSED_INTERVAL;
-      
     }
     else return_value = e_RKQS_ERROR_UNKNOWN;
   }

@@ -39,9 +39,9 @@ __device__ /*__host__*/ int CUDA_SPIN_XVS_XYZ( double spin[], double xvs[]);
 __device__ /*__host__*/ int CUDA_dB_ROHM_HOLLEY_XVS( double xvs[], double BField[], double dField_1D_FLAT[]);
 __device__ /*__host__*/ int CUDA_Mag_ROHM_HOLLEY_XVS( double xvs[], double BField[]);
 __device__ /*__host__*/ int CUDA_RF_BFIELD( double t, double xvs[],  double brf[]);
-__device__ /*__host__*/ int CUDA_derivs_XVS( double t, double xvs[], double dxvsdt[], double BField[], double dField_1D_FLAT[]);
-__device__ /*__host__*/ int CUDA_rkck_XVS( double *d_IO, int *d_IO_INT, int vi_RECORD, double t, double xvs[], double dxvsdt[], double h, double xvserr[], double xvsout[], double BField[], double dField_1D_FLAT[]);
-__device__ /*__host__*/ int CUDA_rkqs_XVS( double *d_IO, int *d_IO_INT, int vi_RECORD, double xvs[], double dxvsdt[], double *t, double htry, double *hdid, double *hnext, double xvs_scal[], double BField[], double dField_1D_FLAT[], double epsilon[], int *rkqs_steps);
+__device__ /*__host__*/ int CUDA_derivs_XVS( double t, double xvs[], double dxvsdt[], double BField[], double dField_1D_FLAT[], double t_START, double inter[]);
+__device__ /*__host__*/ int CUDA_rkck_XVS( double *d_IO, int *d_IO_INT, int vi_RECORD, double t, double xvs[], double dxvsdt[], double h, double xvserr[], double xvsout[], double BField[], double dField_1D_FLAT[], double, inter[]); 
+__device__ /*__host__*/ int CUDA_rkqs_XVS( double *d_IO, int *d_IO_INT, int vi_RECORD, double xvs[], double dxvsdt[], double *t, double htry, double *hdid, double *hnext, double xvs_scal[], double BField[], double dField_1D_FLAT[], double epsilon[], int *rkqs_steps, double inter[]); //);
 __device__ /*__host__*/ int CUDA_RECORD_INT( int *d_IO_INT, int vi_RECORD, int e_d_IO_INT_PARAM, int vi_PARAM);
 __device__ /*__host__*/ int CUDA_RECORD_DOUBLE( double *d_IO,  int vi_RECORD, int e_d_IO_PARAM, double vd_PARAM);
 __device__ /*__host__*/ int CUDA_RECORD_XVS( double *d_IO, int *d_IO_INT, int *p_vi_RECORD, 

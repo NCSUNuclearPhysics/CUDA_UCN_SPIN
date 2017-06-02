@@ -1,7 +1,25 @@
 #ifndef _UCN_CUDA_ENUM
 #define _UCN_CUDA_ENUM
 
-
+enum e_inter {
+	e_inter_t_INITIAL,
+	e_inter_BField_INITIAL_X,
+	e_inter_BField_INITIAL_Y,
+	e_inter_BField_INITIAL_Z,
+	e_inter_spin_INITIAL_0,
+	e_inter_spin_INITIAL_1,
+	e_inter_spin_INITIAL_2,
+	e_inter_spin_INITIAL_3,
+	e_inter_t_FINAL,
+	e_inter_BField_FINAL_X,
+	e_inter_BField_FINAL_Y,
+	e_inter_BField_FINAL_Z,
+	e_inter_spin_FINAL_0,
+	e_inter_spin_FINAL_1,
+	e_inter_spin_FINAL_2,
+	e_inter_spin_FINAL_3,
+	e_inter_LAST
+};
 enum e_derivs {
   e_derivs_X, 
   e_derivs_Y, 
