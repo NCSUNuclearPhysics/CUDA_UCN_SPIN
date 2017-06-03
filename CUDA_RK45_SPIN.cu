@@ -116,7 +116,7 @@ __device__ /*__host__*/ double CUDA_phi( double x, double y)
     solution = ((d_CONST[e_d_CONST_def_PI]/2.0));
   return solution;
 }
-__device__ /*__host__*/ double CUDA_polcalc_XVS( 
+__device__ /*__host__*/ double CUDA_polcalc_SPIN( 
   double bb1x, 
   double bb1y, 
   double bb1z, 
@@ -136,7 +136,7 @@ __device__ /*__host__*/ double CUDA_polcalc_XVS(
   xhat1 = 0.;
   yhat1 = 0.;
   zhat1 = 0.;
-  // CUDA_SPIN_XVS_XYZ( spin, spinor );
+  // CUDA_SPIN_SPIN_XYZ( spin, spinor );
   snorm = (spinor[0]*spinor[0]) + (spinor[1]*spinor[1]) +  
           (spinor[2]*spinor[2]) + (spinor[3]*spinor[3]);
   xhat1 =( 2.*((spinor[0]*spinor[2]) + (spinor[1]*spinor[3])))/snorm;
@@ -146,7 +146,7 @@ __device__ /*__host__*/ double CUDA_polcalc_XVS(
   polarization = xhat1*bxhat + yhat1*byhat + zhat1*bzhat;
   return(polarization);
 }
-__device__ /*__host__*/ int CUDA_derivs_XVS( 
+__device__ /*__host__*/ int CUDA_derivs_SPIN( 
   double t,
   double spinor[],
   double dspinordt[],
@@ -197,7 +197,7 @@ __device__ /*__host__*/ int CUDA_derivs_XVS(
   dspinordt[3] = btoomega * ( (BField[2] * spinor[2]) - (BField[0] * spinor[0]) + (BField[1] * spinor[1]));
   return 0;
 }
-__device__ /*__host__*/ int CUDA_rkck_XVS( 
+__device__ /*__host__*/ int CUDA_rkck_SPIN( 
   double *d_IO, 
   int *d_IO_INT, 
   int vi_RECORD,
@@ -210,7 +210,7 @@ __device__ /*__host__*/ int CUDA_rkck_XVS(
   double BField[])
 {
   // double BField[3][3];
-  CUDA_derivs_XVS(t, spinor, dspinordt, BField);
+  CUDA_derivs_SPIN(t, spinor, dspinordt, BField);
   int i;
   /*   static const a2=(0.2, a3=(0.3, a4=(0.6, a5=(1.0, a6=(0.875; */
   const double b21=(0.2), b31=(3.0/40.0), b32=(9.0/40.0), b41=(0.3), b42=( -0.9), b43=(1.2);
@@ -220,20 +220,20 @@ __device__ /*__host__*/ int CUDA_rkck_XVS(
   const double dc5=( -277.0/14336.0), dc1=(c1-2825.0/27648.0),  dc3=(c3-18575.0/48384.0), dc4=(c4-13525.0/55296.0), dc6=(c6-0.25);
   double ak2[4], ak3[4], ak4[4], ak5[4], ak6[4], spinortemp[4];
   for (i = 0; i<4; i++)   /* First step */ spinortemp[i]=spinor[i]+b21*h*dspinordt[i];
-  CUDA_derivs_XVS(t, spinor, ak2, BField);    /* Second step */
+  CUDA_derivs_SPIN(t, spinor, ak2, BField);    /* Second step */
   for (i = 0; i<4; i++) spinortemp[i]=spinor[i]+h*(b31*dspinordt[i]+b32*ak2[i]);
-  CUDA_derivs_XVS(t, spinor, ak3, BField);    /* Third step */
+  CUDA_derivs_SPIN(t, spinor, ak3, BField);    /* Third step */
   for (i = 0; i<4; i++) spinortemp[i]=spinor[i]+h*(b41*dspinordt[i]+b42*ak2[i]+b43*ak3[i]);
-  CUDA_derivs_XVS(t, spinor, ak4, BField);    /* Fourth step */
+  CUDA_derivs_SPIN(t, spinor, ak4, BField);    /* Fourth step */
   for (i = 0; i<4; i++) spinortemp[i]=spinor[i]+h*(b51*dspinordt[i]+b52*ak2[i]+b53*ak3[i]+b54*ak4[i]);
-  CUDA_derivs_XVS(t, spinortemp, ak5, BField);    /* Fifth step */
+  CUDA_derivs_SPIN(t, spinortemp, ak5, BField);    /* Fifth step */
   for (i = 0; i<4; i++) spinortemp[i]=spinor[i]+h*(b61*dspinordt[i]+b62*ak2[i]+b63*ak3[i]+b64*ak4[i]+b65*ak5[i]);
-  CUDA_derivs_XVS(t, spinor, ak6, BField);    /* Sixth step */
+  CUDA_derivs_SPIN(t, spinor, ak6, BField);    /* Sixth step */
   for (i = 0; i<4; i++)  spinorout[i]=spinor[i]+h*(c1*dspinordt[i]+c3*ak3[i]+c4*ak4[i]+c6*ak6[i]); /* Accumulate increments with proper weights */
   for (i = 0; i<4; i++) spinorerr[i]=h*(dc1*dspinordt[i]+dc3*ak3[i]+dc4*ak4[i]+dc5*ak5[i]+dc6*ak6[i]);
   return 0;
 }
-__device__ /*__host__*/ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
+__device__ /*__host__*/ int CUDA_rkqs_SINGLE_ATTEMPT_SPIN(
   double *d_IO, 
   int *d_IO_INT,
   int vi_RECORD, 
@@ -250,19 +250,22 @@ __device__ /*__host__*/ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
 	 double inter[])
 {
   int i, j, k;
-  double hnext_xv;
+  // double hnext_xv;
   double hnext_s;
   double hcurrent = htry;
   double spinor_temp[4];
   double epsilon_temp[4];
-  double error, error_xv, error_s;
+  // double error
+	// double error_xv
+	double error_s;
   int return_value = -1;
-  int return_value_xv = -1;
+  // int return_value_xv = -1;
   int return_value_s = -1;
-  double abs_max_xv, abs_max_s;
+  // double abs_max_xv
+	double abs_max_s;
   double hnext_s_GB, hnext_s_GU, hnext_s_SB, hnext_s_SU;
-  double hnext_xv_GB, hnext_xv_GU, hnext_xv_SB, hnext_xv_SU;
-  CUDA_rkck_XVS( 
+  // double hnext_xv_GB, hnext_xv_GU, hnext_xv_SB, hnext_xv_SU;
+  CUDA_rkck_SPIN( 
     d_IO, 
     d_IO_INT, 
     vi_RECORD, 
@@ -323,7 +326,7 @@ __device__ /*__host__*/ int CUDA_rkqs_SINGLE_ATTEMPT_XVS(
   
   /* nrerror("stepsize underflow in rkqs"); */ /* diag */
   if ((*t + hcurrent) == *t) return_value = e_RKQS_ERROR_STEPSIZE_UNDERFLOW;
-  else if (return_value_xv==0 && return_value_s==0)
+  else if (return_value_s==0)
   {
     for (i=0; i<4; i++)
     {
@@ -394,7 +397,7 @@ __device__ /*__host__*/ int CUDA_RECORD_DOUBLE(
   d_IO[vi_DOUBLE_IO_OFFSET + e_d_IO_PARAM] = vd_PARAM;
   return 0;
 }
-__device__ /*__host__*/ int CUDA_RECORD_XVS( 
+__device__ /*__host__*/ int CUDA_RECORD_SPIN( 
   double *d_IO, int *d_IO_INT,  int *p_vi_RECORD, 
   double l_time_CURRENT, double l_spinor[], double l_epsilon[], double l_spinor_scal[], double l_dspinordt[], 
   double l_BField[], double l_pol, int l_rkqs_TRIED, double l_hnext)
@@ -436,7 +439,7 @@ __device__ /*__host__*/ int CUDA_RECORD_XVS(
 }
 
 
-__global__ void GENERIC_PIECEWISE_KERNEL_MULTI_XVS_RKQS_LOOP(
+__global__ void GENERIC_PIECEWISE_KERNEL_MULTI_SPIN_RKQS_LOOP(
   double *d_IO, 
   int *d_IO_INT, 
   int numRecordsStart,
@@ -489,8 +492,8 @@ __global__ void GENERIC_PIECEWISE_KERNEL_MULTI_XVS_RKQS_LOOP(
   
   // CUDA_setspin( l_spinor, l_spin, l_spinnor, l_BField);
   int vi_CYCLE = 0;
-  CUDA_derivs_XVS(l_time_CURRENT, l_spinor, l_dspinordt, l_BField);
-  l_pol = CUDA_polcalc_XVS(l_BField[0], l_BField[1], l_BField[2], l_spinor);
+  CUDA_derivs_SPIN(l_time_CURRENT, l_spinor, l_dspinordt, l_BField);
+  l_pol = CUDA_polcalc_SPIN(l_BField[0], l_BField[1], l_BField[2], l_spinor);
   vi_REVERSE_FLAG = 0;
   // if (d_CONST[e_d_CONST_h1]<d_CONST[e_d_CONST_h1_SPIN]) l_htry = d_CONST[e_d_CONST_h1];
   // else l_htry = fmin(d_CONST[e_d_CONST_h1],d_CONST[e_d_CONST_h1_SPIN]);
@@ -519,15 +522,15 @@ __global__ void GENERIC_PIECEWISE_KERNEL_MULTI_XVS_RKQS_LOOP(
       // }
     if (vi_RECORD==0)
     {
-      CUDA_derivs_XVS(l_time_CURRENT, l_spinor, l_dspinordt, l_BField);
-      l_pol = CUDA_polcalc_XVS(l_BField[0], l_BField[1], l_BField[2], l_spinor);
-      CUDA_RECORD_XVS(d_IO, d_IO_INT,  &vi_RECORD, 
+      CUDA_derivs_SPIN(l_time_CURRENT, l_spinor, l_dspinordt, l_BField);
+      l_pol = CUDA_polcalc_SPIN(l_BField[0], l_BField[1], l_BField[2], l_spinor);
+      CUDA_RECORD_SPIN(d_IO, d_IO_INT,  &vi_RECORD, 
         l_time_CURRENT, l_spinor, l_epsilon, l_spinor_scal, l_dspinordt, 
         l_BField, l_pol, l_rkqs_TRIED, l_hnext);
     }
     else
     {
-      return_value_RKQS = CUDA_rkqs_SINGLE_ATTEMPT_XVS(
+      return_value_RKQS = CUDA_rkqs_SINGLE_ATTEMPT_SPIN(
         d_IO, 
         d_IO_INT, 
         vi_RECORD, 
@@ -544,14 +547,14 @@ __global__ void GENERIC_PIECEWISE_KERNEL_MULTI_XVS_RKQS_LOOP(
       if (return_value_RKQS==e_RKQS_ERROR_NONE)
       {
         l_time_CURRENT = l_time_CURRENT + l_hdid;
-        CUDA_derivs_XVS(l_time_CURRENT, l_spinor, l_dspinordt, l_BField);
-        l_pol = CUDA_polcalc_XVS(l_BField[0], l_BField[1], l_BField[2], l_spinor);
+        CUDA_derivs_SPIN(l_time_CURRENT, l_spinor, l_dspinordt, l_BField);
+        l_pol = CUDA_polcalc_SPIN(l_BField[0], l_BField[1], l_BField[2], l_spinor);
         // CUDA_RECORD_DOUBLE(d_IO, vi_RECORD, e_d_IO_EXTRA_1, l_hnext);
         vi_RKQS_STEP++;
         if (vi_RKQS_STEP>=d_CONST_INT[e_d_CONST_INT_numCyclesPerRecord])
         {
           // CUDA_RECORD_DOUBLE(d_IO, vi_RECORD, e_d_IO_EXTRA_0, l_time_CURRENT);
-          CUDA_RECORD_XVS(d_IO, d_IO_INT,  &vi_RECORD, 
+          CUDA_RECORD_SPIN(d_IO, d_IO_INT,  &vi_RECORD, 
             l_time_CURRENT, l_spinor, l_epsilon, l_spinor_scal, l_dspinordt, 
             l_BField, l_pol, l_rkqs_TRIED, l_hnext);
           vi_RKQS_STEP = 0;
@@ -610,12 +613,12 @@ void GENERIC_RECORD_FRAME(
   // cudaPrintfInit ();
     // Run kernel
   cudaThreadSynchronize();
-  GENERIC_PIECEWISE_KERNEL_MULTI_XVS_RKQS_LOOP<<< param_numBlocks, param_numThreadsPerBlock >>>(
+  GENERIC_PIECEWISE_KERNEL_MULTI_SPIN_RKQS_LOOP<<< param_numBlocks, param_numThreadsPerBlock >>>(
     d_IO, 
     d_IO_INT, 
     numRecordsStart,
     numRecordsEnd);
-  // GENERIC_PIECEWISE_KERNEL_MULTI_XVS<<<h_CONST_INT[e_d_CONST_INT_numBlocks],h_CONST_INT[e_d_CONST_INT_numThreadsPerBlock]>>>(
+  // GENERIC_PIECEWISE_KERNEL_MULTI_SPIN<<<h_CONST_INT[e_d_CONST_INT_numBlocks],h_CONST_INT[e_d_CONST_INT_numThreadsPerBlock]>>>(
     // d_IO, 
     // d_IO_INT, 
     // vi_RecordsStartCurrent,
