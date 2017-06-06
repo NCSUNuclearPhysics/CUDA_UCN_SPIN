@@ -150,7 +150,8 @@ __device__ /*__host__*/ int CUDA_derivs_SPIN(
   double t,
   double spinor[],
   double dspinordt[],
-  double BField[])
+  double BField[],
+  double inter[])
 {  
   double rfstr = d_CONST[e_d_CONST_RF_BFIELD_MAG];
   double  brf[4],omega,btoomega,zrf,zdist,zdelta;
@@ -161,7 +162,7 @@ __device__ /*__host__*/ int CUDA_derivs_SPIN(
 	double t_INTERVAL = inter[e_inter_t_FINAL] - inter[e_inter_t_INITIAL];
 	double t_STEP = t - inter[e_inter_t_INITIAL];
 	double BField_STEP[3];
-	spin_INTERVAL_3 = inter[e_inter_spin_FINAL_3] - inter[e_inter_spin_INITIAL_3];
+	double spin_INTERVAL_3 = inter[e_inter_spin_FINAL_3] - inter[e_inter_spin_INITIAL_3];
   double BField_INTERVAL_X = inter[e_inter_BField_FINAL_X] - inter[e_inter_BField_INITIAL_X];
   double BField_INTERVAL_Y = inter[e_inter_BField_FINAL_Y] - inter[e_inter_BField_INITIAL_Y];
   double BField_INTERVAL_Z = inter[e_inter_BField_FINAL_Z] - inter[e_inter_BField_INITIAL_Z];
@@ -169,7 +170,7 @@ __device__ /*__host__*/ int CUDA_derivs_SPIN(
   BField[1] = (BField_INTERVAL_Y/t_INTERVAL)*t_STEP + inter[e_inter_BField_INITIAL_Y];
   BField[2] = (BField_INTERVAL_Z/t_INTERVAL)*t_STEP + inter[e_inter_BField_INITIAL_Z];
   
-	zdist = (spin_INTERVAL_3/t_INTERVAL)*t_STEP+inter[e_inter_spin_INITIAL_3]; //spin[2];
+  zdist = (spin_INTERVAL_3/t_INTERVAL)*t_STEP+inter[e_inter_spin_INITIAL_3]; //spin[2];
   zdelta = (zdist - zrf)*(zdist -zrf)/(.05*.05);
   brf[0] = rfstr*cos(omega*(t-0.0)) * (1.0/((1.0+zdelta)*(1.0+zdelta))); 
   brf[1] = 0.;
@@ -207,10 +208,11 @@ __device__ /*__host__*/ int CUDA_rkck_SPIN(
   double h,
   double spinorerr[],
   double spinorout[],
-  double BField[])
+  double BField[],
+  double inter[])
 {
   // double BField[3][3];
-  CUDA_derivs_SPIN(t, spinor, dspinordt, BField);
+  CUDA_derivs_SPIN(t, spinor, dspinordt, BField, inter);
   int i;
   /*   static const a2=(0.2, a3=(0.3, a4=(0.6, a5=(1.0, a6=(0.875; */
   const double b21=(0.2), b31=(3.0/40.0), b32=(9.0/40.0), b41=(0.3), b42=( -0.9), b43=(1.2);
@@ -220,15 +222,15 @@ __device__ /*__host__*/ int CUDA_rkck_SPIN(
   const double dc5=( -277.0/14336.0), dc1=(c1-2825.0/27648.0),  dc3=(c3-18575.0/48384.0), dc4=(c4-13525.0/55296.0), dc6=(c6-0.25);
   double ak2[4], ak3[4], ak4[4], ak5[4], ak6[4], spinortemp[4];
   for (i = 0; i<4; i++)   /* First step */ spinortemp[i]=spinor[i]+b21*h*dspinordt[i];
-  CUDA_derivs_SPIN(t, spinor, ak2, BField);    /* Second step */
+  CUDA_derivs_SPIN(t, spinor, ak2, BField, inter);    /* Second step */
   for (i = 0; i<4; i++) spinortemp[i]=spinor[i]+h*(b31*dspinordt[i]+b32*ak2[i]);
-  CUDA_derivs_SPIN(t, spinor, ak3, BField);    /* Third step */
+  CUDA_derivs_SPIN(t, spinor, ak3, BField, inter);    /* Third step */
   for (i = 0; i<4; i++) spinortemp[i]=spinor[i]+h*(b41*dspinordt[i]+b42*ak2[i]+b43*ak3[i]);
-  CUDA_derivs_SPIN(t, spinor, ak4, BField);    /* Fourth step */
+  CUDA_derivs_SPIN(t, spinor, ak4, BField, inter);    /* Fourth step */
   for (i = 0; i<4; i++) spinortemp[i]=spinor[i]+h*(b51*dspinordt[i]+b52*ak2[i]+b53*ak3[i]+b54*ak4[i]);
-  CUDA_derivs_SPIN(t, spinortemp, ak5, BField);    /* Fifth step */
+  CUDA_derivs_SPIN(t, spinortemp, ak5, BField, inter);    /* Fifth step */
   for (i = 0; i<4; i++) spinortemp[i]=spinor[i]+h*(b61*dspinordt[i]+b62*ak2[i]+b63*ak3[i]+b64*ak4[i]+b65*ak5[i]);
-  CUDA_derivs_SPIN(t, spinor, ak6, BField);    /* Sixth step */
+  CUDA_derivs_SPIN(t, spinor, ak6, BField, inter);    /* Sixth step */
   for (i = 0; i<4; i++)  spinorout[i]=spinor[i]+h*(c1*dspinordt[i]+c3*ak3[i]+c4*ak4[i]+c6*ak6[i]); /* Accumulate increments with proper weights */
   for (i = 0; i<4; i++) spinorerr[i]=h*(dc1*dspinordt[i]+dc3*ak3[i]+dc4*ak4[i]+dc5*ak5[i]+dc6*ak6[i]);
   return 0;
@@ -275,7 +277,8 @@ __device__ /*__host__*/ int CUDA_rkqs_SINGLE_ATTEMPT_SPIN(
     hcurrent, 
     epsilon_temp, 
     spinor_temp, 
-    BField);
+    BField,
+    inter);
   double epsilon_max_xv = 0.0;
   double epsilon_max_s = 0.0;
   for (i = 0; i<4; i++)
@@ -458,6 +461,8 @@ __global__ void GENERIC_PIECEWISE_KERNEL_MULTI_SPIN_RKQS_LOOP(
   double l_BField[3];
   double l_pol;
   double l_hnext, l_hdid, l_htry;
+  double l_inter[e_inter_LAST];
+  for (i = 0; i<e_inter_LAST; i++) l_inter[i] = 0.0;
   int vi_RECORD_IO_OFFSET_START = getGlobalIdx_3D_3D()*d_CONST_INT[e_d_CONST_INT_numRecordsPerThread] + numRecordsStart;
   int vi_IO_OFFSET_START = vi_RECORD_IO_OFFSET_START*e_d_IO_LAST;
   int vi_IO_INT_OFFSET_START = vi_RECORD_IO_OFFSET_START*e_d_IO_INT_LAST;
@@ -492,7 +497,7 @@ __global__ void GENERIC_PIECEWISE_KERNEL_MULTI_SPIN_RKQS_LOOP(
   
   // CUDA_setspin( l_spinor, l_spin, l_spinnor, l_BField);
   int vi_CYCLE = 0;
-  CUDA_derivs_SPIN(l_time_CURRENT, l_spinor, l_dspinordt, l_BField);
+  CUDA_derivs_SPIN(l_time_CURRENT, l_spinor, l_dspinordt, l_BField, l_inter);
   l_pol = CUDA_polcalc_SPIN(l_BField[0], l_BField[1], l_BField[2], l_spinor);
   vi_REVERSE_FLAG = 0;
   // if (d_CONST[e_d_CONST_h1]<d_CONST[e_d_CONST_h1_SPIN]) l_htry = d_CONST[e_d_CONST_h1];
@@ -522,7 +527,7 @@ __global__ void GENERIC_PIECEWISE_KERNEL_MULTI_SPIN_RKQS_LOOP(
       // }
     if (vi_RECORD==0)
     {
-      CUDA_derivs_SPIN(l_time_CURRENT, l_spinor, l_dspinordt, l_BField);
+      CUDA_derivs_SPIN(l_time_CURRENT, l_spinor, l_dspinordt, l_BField, l_inter);
       l_pol = CUDA_polcalc_SPIN(l_BField[0], l_BField[1], l_BField[2], l_spinor);
       CUDA_RECORD_SPIN(d_IO, d_IO_INT,  &vi_RECORD, 
         l_time_CURRENT, l_spinor, l_epsilon, l_spinor_scal, l_dspinordt, 
@@ -543,11 +548,12 @@ __global__ void GENERIC_PIECEWISE_KERNEL_MULTI_SPIN_RKQS_LOOP(
         l_spinor_scal, 
         l_BField, 
         l_epsilon, 
-        &l_rkqs_TRIED);
+        &l_rkqs_TRIED,
+        l_inter);
       if (return_value_RKQS==e_RKQS_ERROR_NONE)
       {
         l_time_CURRENT = l_time_CURRENT + l_hdid;
-        CUDA_derivs_SPIN(l_time_CURRENT, l_spinor, l_dspinordt, l_BField);
+        CUDA_derivs_SPIN(l_time_CURRENT, l_spinor, l_dspinordt, l_BField, l_inter);
         l_pol = CUDA_polcalc_SPIN(l_BField[0], l_BField[1], l_BField[2], l_spinor);
         // CUDA_RECORD_DOUBLE(d_IO, vi_RECORD, e_d_IO_EXTRA_1, l_hnext);
         vi_RKQS_STEP++;
